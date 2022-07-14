@@ -6,22 +6,6 @@ import (
 	"testing"
 )
 
-func TestFindFile(t *testing.T) {
-	uuid := "testimage"
-	a := NewFileAdapter()
-
-	file, err := a.FindFile(uuid)
-	if err != nil {
-		t.Fail()
-	}
-	//FileDirectory()
-	if file == nil {
-		t.Fail()
-	}
-	t.Log(file)
-
-}
-
 func TestAddFile(t *testing.T) {
 
 }

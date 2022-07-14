@@ -12,27 +12,24 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting server...")
 	config.Env()
 	//Database adapter - //internal/db
 	mongodb, err := adapter.NewDbAdapter()
+	fmt.Println("DB adapter initialized: ", mongodb)
 	if err != nil {
+		fmt.Println(err)
 	}
-	filedb := adapter.NewFileAdapter()
 
-	fmt.Println(mongodb, "this is db adapter")
+	filedb := adapter.NewFileAdapter()
+	fmt.Println("File adapter initialized: ", filedb)
 
 	//Application //internal/application/api
 	applicationAPI := api.NewApplication(mongodb, filedb)
-	fmt.Println(applicationAPI, "This is application API")
+	fmt.Println("API adapter initialized: ", applicationAPI)
 
 	//serverAdapter - //internal/server
 	serverAdapter := adapter.NewServerAdapter(applicationAPI)
-	fmt.Println(serverAdapter, "This is serveradapter")
+	fmt.Println("Server adapter initialized: ", serverAdapter)
 	adapter.Router(serverAdapter)
 
-	//Iniate frontend
-
 }
-
-//Potentially use filepaths in the db and then read in the pepes from the disk

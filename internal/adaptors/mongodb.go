@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -37,35 +38,46 @@ func NewDbAdapter() (*DbAdapter, error) {
 	//Maybe I just need to only return the db as a variable
 }
 
-func (a *DbAdapter) FindImage(uuid string, querytype string) (*core.Image, error) {
-	fmt.Println("mongodb called")
+func (a *DbAdapter) FindImage(querytype string, query string) (*core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
-	image := &core.Image{}
-	err := collection.FindOne(ctx, bson.M{querytype: uuid}).Decode(&image)
+	cursor, err := collection.Find(ctx, bson.D{{Key: querytype, Value: query}})
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
+	images := []core.Image{}
+	if err = cursor.All(ctx, &images); err != nil {
+		return nil, err
+	}
+	image := randomize(images)
 	return image, nil
 }
 
-func (a *DbAdapter) FindImages(uuid []string, querytype string) ([]*core.Image, error) {
-	fmt.Println("mongodb called")
+func (a *DbAdapter) FindImages(querytype string, query []string, quantity int) ([]core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
-	images := []*core.Image{}
-	for _, v := range uuid {
-		image := core.Image{}
-		err := collection.FindOne(ctx, bson.M{querytype: v}).Decode(&image)
-		if err != nil {
-			fmt.Println(err)
-			return nil, err
-		}
-		images = append(images, &image)
+	images := []core.Image{}
+
+	var otps bson.D
+	if len(query) == 1 {
+		otps = bson.D{{Key: querytype, Value: query[0]}}
 	}
+	if len(query) == 2 {
+		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}}
+	}
+	if len(query) >= 3 {
+		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
+	}
+	cursor, err := collection.Find(ctx, otps)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(ctx, &images); err != nil {
+		return nil, err
+	}
+	images = randomizeArray(images, quantity)
 	return images, nil
 }
 
@@ -100,4 +112,28 @@ func (a *DbAdapter) Delete(uuid string) error {
 		return err
 	}
 	return nil
+}
+
+func randomize(images []core.Image) *core.Image {
+	if len(images) == 0 {
+		return nil
+	}
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(images))
+	image := images[randomIndex]
+	return &image
+}
+
+//Must randomize the images based on the quantity
+func randomizeArray(images []core.Image, quantity int) []core.Image {
+	if len(images) == 0 {
+		return nil
+	}
+	rand.Seed(time.Now().UnixNano())
+	randomIndexes := rand.Perm(len(images))
+	randomImages := []core.Image{}
+	for i := 0; i < quantity; i++ {
+		randomImages = append(randomImages, images[randomIndexes[i]])
+	}
+	return randomImages
 }

@@ -18,7 +18,6 @@ func TestHealthcheck(t *testing.T) {
 	rr := httptest.NewRecorder()
 	s := &ServerAdapter{}
 	handler := http.HandlerFunc(s.healthcheck)
-
 	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
 	// directly and pass in our Request and ResponseRecorder.
 	handler.ServeHTTP(rr, req)

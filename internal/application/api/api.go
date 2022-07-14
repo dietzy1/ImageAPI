@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 	"github.com/dietzy1/imageAPI/internal/ports"
@@ -26,58 +27,56 @@ func NewApplication(db ports.DbPort, file ports.FilePort) *Application {
 //Implements methods on the APi port
 func (a Application) FindImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	querytype := "uuid"
+	query := vars["uuid"]
+	if vars["uuid"] == "" {
+		querytype = "tags"
+		query = vars["tag"]
+	}
 
-	//mongoDB function to return the json
-	image, err := a.db.FindImage(vars["uuid"], "uuid")
+	image, err := a.db.FindImage(querytype, query)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	//fmt.Println(image)
+	image.Filepath = "http://localhost:8000/fileserver/" + image.Uuid + ".jpg"
 	w.Header().Set("Content-Type", "application/json")
 	if image == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	json.NewEncoder(w).Encode(image)
-
-	//fileDB
-	file, err := a.file.FindFile(image.Uuid)
-	if err != nil {
-		fmt.Println("error opening file")
-		return
-	}
-
-	//need to find out what format is good for sending the file over
-	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Write(file)
 }
 
 //Implements methods on the APi port
 func (a Application) FindImages(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	uuid := []string{}
-	for _, v := range q["uuid"] {
-		uuid = append(uuid, v)
+	querytype := "tags"
+	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
+	if err != nil || quantity <= 0 { //<= 0 is a hack to allow for a default value
+		quantity = 1
 	}
-	images, err := a.db.FindImages(uuid, "uuid")
-	w.Header().Set("Content-Type", "application/json")
+	query := []string{}
+	tags := strings.Join(q["tags"], "")
+	query = strings.Split(tags, ", ")
+
+	images, err := a.db.FindImages(querytype, query, quantity)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+	for i := 0; i < len(images); i++ {
+		images[i].Filepath = "http://localhost:8000/fileserver/" + images[i].Uuid + ".jpg"
+		w.Header().Set("Content-Type", "application/json")
 	}
 	if images == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	json.NewEncoder(w).Encode(images)
-
-	//Need to do filedatabase call
-
 }
 
 func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("inner API application recieved signal")
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -85,8 +84,8 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.image.Name = r.Form.Get("name")
-	a.image.Tags = r.Form["tags"]
-	//a.image.Data = r.Form.Get("data")
+	tags := strings.Join(r.Form["tags"], "")
+	a.image.Tags = strings.Split(tags, ", ")
 	a.image.NewUUID()
 	a.image.SetTime()
 	data, _, err := r.FormFile("data")
@@ -107,22 +106,18 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
-	//Potentially add in a call to the encoding of the image so application logic remains seperate
 	err = a.file.AddFile(a.image.Uuid, data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		//Potentially need to add in missing a delete function for the database if an error occurs
 		a.db.Delete(a.image.Uuid)
 		_ = json.NewEncoder(w).Encode("some other error")
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-
 }
 
 //Implements methods on the APi port
 func (a Application) DeleteImage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("inner API application recieved signal")
 	vars := mux.Vars(r)
 	err := a.db.Delete(vars["uuid"])
 	if err != nil {
@@ -136,7 +131,6 @@ func (a Application) DeleteImage(w http.ResponseWriter, r *http.Request) {
 
 //Implements methods on the APi port
 func (a Application) UpdateImage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("inner API application recieved signal")
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 

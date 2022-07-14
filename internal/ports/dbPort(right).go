@@ -6,9 +6,9 @@ import "github.com/dietzy1/imageAPI/internal/application/core"
 
 //implement the mongodb interface methods
 type DbPort interface {
-	FindImage(uuid string, querytype string) (*core.Image, error)
-	FindImages(uuid []string, querytype string) ([]*core.Image, error)
+	FindImage(querytype string, query string) (*core.Image, error)
+	FindImages(querytype string, query []string, quantity int) ([]core.Image, error)
 	Store(image *core.Image) error
-	Update(uuuid string, image *core.Image) error
+	Update(uuid string, image *core.Image) error
 	Delete(uuid string) error
 }

@@ -13,11 +13,11 @@ func NewImage() *Image {
 }
 
 type Image struct {
-	Name    string    `json:"name" bson:"name"`
-	Uuid    string    `json:"uuid" bson:"uuid"`
-	Tags    []string  `json:"tags" bson:"tags"`
-	Created time.Time `json:"created" bson:"created"`
-	//	Data    multipart.File `json:"data,omitempty"  bson:"data,omitempty"`
+	Name     string    `json:"name" bson:"name"`
+	Uuid     string    `json:"uuid" bson:"uuid"`
+	Tags     []string  `json:"tags" bson:"tags"`
+	Created  time.Time `json:"created" bson:"created"`
+	Filepath string    `json:"filepath" bson:"data,omitempty"`
 }
 
 func (i Image) Validate(image Image) error {
