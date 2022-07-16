@@ -1,12 +1,27 @@
+import Home from "./Pages/Home";
 
-import './App.css';
-import Home from './Pages/Home';
+import React from "react";
+import { ReactDOM } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+//These components are not loaded until you go to their path
+const About = React.lazy(() => import("./Pages/About"));
+const Documentation = React.lazy(() => import("./Pages/Documentation"));
+const Loading = () => <p>Loading ...</p>;
 
 function App() {
   return (
-  <div>
-  <Home/>
-  </div>
+    <div>
+      <React.Suspense fallback={<Loading />}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/documentation" element={<Documentation />} />
+          </Routes>
+        </Router>
+      </React.Suspense>
+    </div>
   );
 }
 

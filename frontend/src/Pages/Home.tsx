@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
-import Appbar from "../Components/Appbar";
+import Navbar from "../Components/Navbar";
 import FrontGallery from "../Components/FrontGallery";
 import Gallery from "../Components/Gallery";
 import Searchbar from "../Components/Searchbar";
@@ -37,9 +37,13 @@ function Home() {
 
   return (
     <div>
-      <Appbar />
+      <Navbar />
       <Text />
       <FrontGallery />
+
+      {/* I need to add in a rotating carousel into the frontgallery and keep it on the main screen,
+ the buttom on main screen should scroll down a full page to the search bar where all images are shown */}
+
       <Searchbar searchText={(text: any) => setTerm(text)} />
       {!loading && images === null && (
         <h1 className="text-white"> No images found</h1>

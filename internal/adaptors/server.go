@@ -33,19 +33,24 @@ func (s *ServerAdapter) Router() http.Handler {
 	return s.router
 }
 
+//TODO need to implement middlewares
+
 //Routering and paths
 func Router(s *ServerAdapter) {
 	r := mux.NewRouter()
-	r.HandleFunc("/healthcheck", s.healthcheck)
+	//subrouter
+	sb := r.PathPrefix("/api/v0").Subrouter()
+
+	sb.HandleFunc("/healthcheck", s.healthcheck)
 
 	//POST, PUT, DELETE ROUTES
-	r.HandleFunc("/image/", s.addImage).Methods(http.MethodPost) //form data
-	r.HandleFunc("/image/{uuid}", s.updateImage).Queries("uuid", "{uuid}").Methods(http.MethodPut)
-	r.HandleFunc("/image/{uuid}", s.deleteImage).Queries("uuid", "{uuid}").Methods(http.MethodDelete)
+	sb.HandleFunc("/image/", s.addImage).Methods(http.MethodPost) //form data
+	sb.HandleFunc("/image/{uuid}", s.updateImage).Queries("uuid", "{uuid}").Methods(http.MethodPut)
+	sb.HandleFunc("/image/{uuid}", s.deleteImage).Queries("uuid", "{uuid}").Methods(http.MethodDelete)
 
 	//GET ROUTES
-	r.HandleFunc("/image/", s.findImage).Queries("tag", "{tag}", "uuid", "{uuid}").Methods(http.MethodGet)
-	r.HandleFunc("/images/", s.findImages).Queries("tags", "{tags}", "quantity", "{quantity}").Methods(http.MethodGet)
+	sb.HandleFunc("/image/", s.findImage).Queries("tag", "{tag}", "uuid", "{uuid}").Methods(http.MethodGet)
+	sb.HandleFunc("/images/", s.findImages).Queries("tags", "{tags}", "quantity", "{quantity}").Methods(http.MethodGet)
 
 	//Fileserver
 	fs := http.FileServer(http.Dir("../image-folder"))
@@ -60,6 +65,7 @@ func Router(s *ServerAdapter) {
 	}
 	log.Fatal(srv.ListenAndServe())
 	s.router = r
+
 }
 
 //Entry point for http calls
