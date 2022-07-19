@@ -40,6 +40,9 @@ func Router(s *ServerAdapter) {
 	r := mux.NewRouter()
 	//subrouter
 	sb := r.PathPrefix("/api/v0").Subrouter()
+	//Applies middleware to all subrouters
+	sb.Use(s.loggingMiddleware)
+	sb.Use(s.corsMiddleware)
 
 	sb.HandleFunc("/healthcheck", s.healthcheck)
 
@@ -66,6 +69,27 @@ func Router(s *ServerAdapter) {
 	log.Fatal(srv.ListenAndServe())
 	s.router = r
 
+}
+
+//Logging middleware
+func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		next.ServeHTTP(w, r)
+	})
+}
+
+//Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
+func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		if r.Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 //Entry point for http calls

@@ -1,14 +1,12 @@
-import React from "react";
 import { useEffect, useState } from "react";
-import { text } from "stream/consumers";
 import Navbar from "../Components/Navbar";
 import FrontGallery from "../Components/FrontGallery";
 import Gallery from "../Components/Gallery";
 import Searchbar from "../Components/Searchbar";
 import Text from "../Components/Text";
+import Footer from "../Components/Footer";
 
-const path =
-  "http://localhost:8000/image/?uuid=4e14eaf7-8fdc-4022-b3f5-aa197bf447f4";
+const path = "http://localhost:8000/api/v0/images/?tags=Happy&quantity=20";
 
 export type imageType = {
   name: string;
@@ -19,7 +17,7 @@ export type imageType = {
 };
 
 function Home() {
-  const [images, setImages] = useState<imageType>({} as imageType);
+  const [images, setImages] = useState<imageType[]>({} as imageType[]);
   const [term, setTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -33,32 +31,37 @@ function Home() {
 
   useEffect(() => {
     getImages();
-  }, [term]);
+  }, []);
 
   return (
     <div>
-      <Navbar />
-      <Text />
-      <FrontGallery />
+      <div className="h-screen">
+        <Navbar />
+        <Text />
+        <FrontGallery />
+      </div>
+      <div className="h-screen bg-[#131419]">
+        <div className="container mx-auto">
+          <Searchbar searchText={(text: any) => setTerm(text)} />
 
-      {/* I need to add in a rotating carousel into the frontgallery and keep it on the main screen,
- the buttom on main screen should scroll down a full page to the search bar where all images are shown */}
+          {!loading && images.length === 0 && (
+            <h1 className="text-5xl text-center mx-auto mt-32">
+              Unable to find images :/
+            </h1>
+          )}
 
-      <Searchbar searchText={(text: any) => setTerm(text)} />
-      {!loading && images === null && (
-        <h1 className="text-white"> No images found</h1>
-      )}
-
-      {/*   {loading ? (
-        <h1 className="text-6xl text-center mx-auto mt-32">Loading...</h1>
-      ) : (
-        <div className="grid grid-cols-3 gap-4">
-            <Searchbar key={images.uuid} image={images.filepath} />
-          }
+          {loading ? (
+            <h1 className="text-6xl text-center mx-auto mt-32">Loading...</h1>
+          ) : (
+            <div className="columns-3 p-40">
+              {images.map((image) => (
+                <Gallery key={image.uuid} image={image} />
+              ))}
+            </div>
+          )}
         </div>
-      )} */}
-
-      <Gallery />
+        <Footer />
+      </div>
     </div>
   );
 }

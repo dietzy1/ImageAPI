@@ -1,7 +1,7 @@
 import Home from "./Pages/Home";
 
 import React from "react";
-import { ReactDOM } from "react";
+//import { ReactDOM } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //These components are not loaded until you go to their path

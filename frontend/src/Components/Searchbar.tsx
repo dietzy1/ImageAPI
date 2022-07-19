@@ -1,20 +1,21 @@
 import { useState } from "react";
 
-const ImageSearch = ({ searchText }: any) => {
+const Searchbar = ({ searchText }: any) => {
   const [text, setText] = useState("");
 
   const onSubmit = (e: any) => {
     e.preventDefault();
     searchText(text);
+    console.log(text);
   };
 
   return (
     <div className="max-w-lg rounded overflow-hidden my-10 mx-auto justify-center">
-      <form onSubmit={onSubmit} className="w-full max-w-sm">
-        <div className="flex items-center border-b border-b-2 border-teal-500 py-2">
+      <form onSubmit={onSubmit} className="w-full">
+        <div className="flex items-center border-b-2 border-teal-500 py-2">
           <input
             onChange={(e) => setText(e.target.value)}
-            className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+            className="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none"
             type="text"
             placeholder="Search Image Tag"
           />
@@ -29,4 +30,4 @@ const ImageSearch = ({ searchText }: any) => {
     </div>
   );
 };
-export default ImageSearch;
+export default Searchbar;

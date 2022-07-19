@@ -78,6 +78,7 @@ func (a *DbAdapter) FindImages(querytype string, query []string, quantity int) (
 		return nil, err
 	}
 	images = randomizeArray(images, quantity)
+
 	return images, nil
 }
 
@@ -129,6 +130,10 @@ func randomizeArray(images []core.Image, quantity int) []core.Image {
 	if len(images) == 0 {
 		return nil
 	}
+	if len(images) < quantity {
+		quantity = len(images)
+	}
+
 	rand.Seed(time.Now().UnixNano())
 	randomIndexes := rand.Perm(len(images))
 	randomImages := []core.Image{}

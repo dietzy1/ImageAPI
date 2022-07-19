@@ -38,6 +38,8 @@ func (i *Image) NewUUID() {
 }
 
 func (i *Image) SetTime() {
+
+	//i.Created = time.Now().Format(time.RFC3339)
 	i.Created = time.Now()
 }
 
