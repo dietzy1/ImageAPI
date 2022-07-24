@@ -26,7 +26,7 @@ func NewFileAdapter() *FileAdapter {
 }
 
 func (f *FileAdapter) AddFile(uuid string, data multipart.File) error {
-	os.Chdir("/Users/martinvad/go/src/github.com/dietzy1/imageAPI/image-folder")
+	os.Chdir(os.Getenv("FILE_DIR"))
 	file, err := os.OpenFile(uuid+".jpg", os.O_WRONLY|os.O_CREATE, 0666)
 	defer file.Close()
 	if err != nil {
@@ -46,7 +46,7 @@ func (f *FileAdapter) AddFile(uuid string, data multipart.File) error {
 }
 
 func (f *FileAdapter) DeleteFile(uuid string) error {
-	os.Chdir("/Users/martinvad/go/src/github.com/dietzy1/imageAPI/image-folder")
+	os.Chdir(os.Getenv("FILE_DIR"))
 	err := os.Remove(uuid + ".jpg")
 	if err != nil {
 		return err

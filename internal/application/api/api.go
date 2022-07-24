@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -51,7 +50,6 @@ func (a Application) FindImage(w http.ResponseWriter, r *http.Request) {
 
 //Implements methods on the APi port
 func (a Application) FindImages(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("FindImages")
 	q := r.URL.Query()
 	querytype := "tags"
 	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))

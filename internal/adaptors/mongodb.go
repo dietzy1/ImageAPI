@@ -38,6 +38,26 @@ func NewDbAdapter() (*DbAdapter, error) {
 	//Maybe I just need to only return the db as a variable
 }
 
+//Mongodb index
+func (a *DbAdapter) NewIndex() {
+	mod := mongo.IndexModel{
+		Keys:    bson.M{"tags": "1"},
+		Options: options.Index().SetUnique(false),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := a.client.Database("Image-Database").Collection("images")
+
+	_, err := collection.Indexes().CreateOne(ctx, mod)
+	if err != nil {
+		// 5. Something went wrong, we log it and return false
+		fmt.Println(err.Error())
+		return
+	}
+	return
+}
+
 func (a *DbAdapter) FindImage(querytype string, query string) (*core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
@@ -55,6 +75,34 @@ func (a *DbAdapter) FindImage(querytype string, query string) (*core.Image, erro
 }
 
 func (a *DbAdapter) FindImages(querytype string, query []string, quantity int) ([]core.Image, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
+	defer cancel()
+	collection := a.client.Database("Image-Database").Collection("images")
+	images := []core.Image{}
+
+	var otps bson.D
+	if len(query) == 1 {
+		otps = bson.D{{Key: querytype, Value: query[0]}}
+	}
+	if len(query) == 2 {
+		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}}
+	}
+	if len(query) >= 3 {
+		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
+	}
+	cursor, err := collection.Find(ctx, otps)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(ctx, &images); err != nil {
+		return nil, err
+	}
+	images = randomizeArray(images, quantity)
+
+	return images, nil
+}
+
+func (a *DbAdapter) FindImages1(querytype string, query []string, quantity int) ([]core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function Appbar() {
   return (
-    <div className="text-white flex justify-between items-center h-16 w-full mx-auto px-4 fixed top-0 z-50  bg-[#131419] ">
+    <div className="text-white flex justify-between items-center h-16 w-full mx-auto px-4 fixed top-0 z-50  ">
       {/*max w-1400px/}
       {/* 1240 */}
       <h1 className=" text-4xl font-bold text-[#00df9a] p-16">Image-Gallery</h1>
