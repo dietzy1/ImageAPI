@@ -1,6 +1,7 @@
 package core
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"time"
@@ -18,6 +19,12 @@ type Image struct {
 	Tags     []string  `json:"tags" bson:"tags"`
 	Created  time.Time `json:"created" bson:"created"`
 	Filepath string    `json:"filepath" bson:"data,omitempty"`
+}
+
+type Credentials struct {
+	Name     string
+	Password string
+	Key      string
 }
 
 func (i Image) Validate(image Image) error {
@@ -43,6 +50,33 @@ func (i *Image) SetTime() {
 	i.Created = time.Now()
 }
 
-//Might need to check if the pointers of the fields are equal to nil to find out if they are filled out.
+func GenerateAPIKey() string {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%X-%X-%X", b[0:2], b[4:8], b[8:11])
+}
 
-//prolly need to define the image struct in here
+func ValidateKey(key string) bool {
+	runearray := []rune(key)
+	if runearray[5] == '-' || runearray[14] == '-' {
+		return false
+	}
+	return true
+}
+
+func testKeys() {
+
+}
+
+//TODO LIST
+
+//Generate api keys -- &&endpoint
+//generate admin api key && endpoint
+//implement login system
+//implement indexing in mongodb proberly
+
+//need to implement system that verifies the structure of the API key so keys without a certain structure is tossed before
+//Implement context

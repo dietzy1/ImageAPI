@@ -4,23 +4,29 @@ import (
 	"fmt"
 
 	//Adapters
-	adapter "github.com/dietzy1/imageAPI/internal/adaptors"
+	"github.com/dietzy1/imageAPI/internal/adaptors/filerepository"
+	"github.com/dietzy1/imageAPI/internal/adaptors/repository"
+
+	//Adapters
+	"github.com/dietzy1/imageAPI/internal/adaptors/server"
+
+	//config
 	"github.com/dietzy1/imageAPI/internal/config"
 
-	"github.com/dietzy1/imageAPI/internal/application/api"
 	//Application
+	"github.com/dietzy1/imageAPI/internal/application/api"
 )
 
 func main() {
 	config.Env()
 	//Database adapter - //internal/db
-	mongodb, err := adapter.NewDbAdapter()
+	mongodb, err := repository.NewDbAdapter()
 	fmt.Println("DB adapter initialized: ", mongodb)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	filedb := adapter.NewFileAdapter()
+	filedb := filerepository.NewFileAdapter()
 	fmt.Println("File adapter initialized: ", filedb)
 
 	//Application //internal/application/api
@@ -28,8 +34,7 @@ func main() {
 	fmt.Println("API adapter initialized: ", applicationAPI)
 
 	//serverAdapter - //internal/server
-	serverAdapter := adapter.NewServerAdapter(applicationAPI)
+	serverAdapter := server.NewServerAdapter(applicationAPI)
 	fmt.Println("Server adapter initialized: ", serverAdapter)
-	adapter.Router(serverAdapter)
-
+	server.Router(serverAdapter)
 }

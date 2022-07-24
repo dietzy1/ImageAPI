@@ -17,6 +17,7 @@ type Application struct {
 	db    ports.DbPort
 	image core.Image
 	file  ports.FilePort
+	dbKey ports.DbKeyPort
 }
 
 //Constructor
@@ -100,7 +101,7 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode("Missing name or tag")
 		return
 	}
-	err = a.db.Store(&a.image)
+	err = a.db.StoreImage(&a.image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
@@ -109,7 +110,7 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 	err = a.file.AddFile(a.image.Uuid, data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		a.db.Delete(a.image.Uuid)
+		a.db.DeleteImage(a.image.Uuid)
 		_ = json.NewEncoder(w).Encode("some other error")
 		return
 	}
@@ -119,7 +120,7 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 //Implements methods on the APi port
 func (a Application) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	err := a.db.Delete(vars["uuid"])
+	err := a.db.DeleteImage(vars["uuid"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to delete image")
@@ -141,7 +142,7 @@ func (a Application) UpdateImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	err = a.db.Update(vars["uuid"], &a.image)
+	err = a.db.UpdateImage(vars["uuid"], &a.image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to update image")

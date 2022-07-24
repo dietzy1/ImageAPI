@@ -1,4 +1,4 @@
-package adapter
+package server
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 type ServerAdapter struct {
 	api    ports.ApiPort
 	router http.Handler
-	//rl     rateLimiting
+	APIKey ports.ApiKeyPort
 }
 
 //helper function
@@ -38,10 +38,20 @@ func (s *ServerAdapter) Router() http.Handler {
 func Router(s *ServerAdapter) {
 	r := mux.NewRouter()
 	//subrouter
+
+	//API key generation ROUTES
+	r.HandleFunc("/generatekey/", s.generateAPIKey).Methods(http.MethodGet)
+	r.HandleFunc("/generateadminkey", s.generateAdminAPIKey).Methods(http.MethodGet)
+
+	//Login logout ROUTES
+	/* r.HandleFunc("", s.signin)
+	r.HandleFunc("", s.signup) */
+
 	sb := r.PathPrefix("/api/v0").Subrouter()
 	//Applies middleware to all subrouters
 	sb.Use(s.loggingMiddleware)
 	sb.Use(s.corsMiddleware)
+	sb.Use(s.authenticateKey)
 	//sb.Use(s.rl.rateLimitingMiddleware)
 
 	sb.HandleFunc("/healthcheck", s.healthcheck)
@@ -71,69 +81,6 @@ func Router(s *ServerAdapter) {
 
 }
 
-//Rate limiting middleware
-/* func (rl *rateLimiting) rateLimitingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//key := mux.Vars(r)["key"]
-		key := "1"
-		rl.c = rl.validateKey(key)
-		if rl.c.Allow() != true {
-			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-} */
-
-//Authentication middleware
-/* func (s *ServerAdapter) authenticationMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r)
-	})
-} */
-
-/* var cooldown = make(map[string]*rate.Limiter)
-var mu sync.Mutex */
-
-/* type rateLimiting struct {
-	c  *rate.Limiter
-	mu sync.Mutex
-}
-
-func (rl *rateLimiting) validateKey(key string) *rate.Limiter {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-
-	cd := make(map[string]*rate.Limiter)
-	limiter, exists := cd[key]
-	if !exists {
-		limiter = rate.NewLimiter(1, 1)
-		cd[key] = limiter
-	}
-	return limiter
-} */
-
-//Logging middleware
-func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
-		next.ServeHTTP(w, r)
-	})
-}
-
-//Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
-func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
-		if r.Method == "OPTIONS" {
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
 //Entry point for http calls
 func (s *ServerAdapter) findImage(w http.ResponseWriter, r *http.Request) {
 	s.api.FindImage(w, r)
@@ -141,8 +88,17 @@ func (s *ServerAdapter) findImage(w http.ResponseWriter, r *http.Request) {
 
 //Entry point for http calls
 func (s *ServerAdapter) findImages(w http.ResponseWriter, r *http.Request) {
-	s.api.FindImages(w, r)
+	vars := mux.Vars(r)
+	key := vars["key"]
 
+	fmt.Println(key)
+	//use the ports to communicate with the application to see if the structure of the key is ok
+
+	//If the structure of the key is ok then it can be passed along to the API which then should verify in the database that the key exists
+
+	//s.APIKey.CheckKey()
+
+	s.api.FindImages(w, r)
 }
 
 //Entry point for http calls
@@ -164,4 +120,16 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	io.WriteString(w, `{"alive": true}`)
+}
+
+func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
+	s.APIKey.AddKey(w, r)
+}
+
+func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
+	s.APIKey.AddKey(w, r)
+}
+
+func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
+
 }

@@ -14,3 +14,9 @@ type ApiPort interface {
 	DeleteImage(w http.ResponseWriter, r *http.Request)
 	UpdateImage(w http.ResponseWriter, r *http.Request)
 }
+
+type ApiKeyPort interface {
+	AddKey(w http.ResponseWriter, r *http.Request)
+	DeleteKey(w http.ResponseWriter, r *http.Request)
+	AuthenticateKey(w http.ResponseWriter, r *http.Request)
+}

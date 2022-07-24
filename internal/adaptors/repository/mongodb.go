@@ -1,4 +1,4 @@
-package adapter
+package repository
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/dietzy1/imageAPI/internal/application/core"
 )
 
-//Implements the db port interface
+//Implements the db port interface and dbApiKey interface
 type DbAdapter struct {
 	client  *mongo.Client
 	timeout time.Duration
@@ -130,7 +130,7 @@ func (a *DbAdapter) FindImages1(querytype string, query []string, quantity int) 
 	return images, nil
 }
 
-func (a *DbAdapter) Store(image *core.Image) error {
+func (a *DbAdapter) StoreImage(image *core.Image) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -141,7 +141,7 @@ func (a *DbAdapter) Store(image *core.Image) error {
 	return nil
 }
 
-func (a *DbAdapter) Update(uuid string, image *core.Image) error {
+func (a *DbAdapter) UpdateImage(uuid string, image *core.Image) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -152,7 +152,7 @@ func (a *DbAdapter) Update(uuid string, image *core.Image) error {
 	return nil
 }
 
-func (a *DbAdapter) Delete(uuid string) error {
+func (a *DbAdapter) DeleteImage(uuid string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")

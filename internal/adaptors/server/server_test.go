@@ -1,4 +1,4 @@
-package adapter
+package server
 
 import (
 	"net/http"
