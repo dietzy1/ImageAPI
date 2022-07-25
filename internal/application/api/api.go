@@ -14,10 +14,11 @@ import (
 
 //Implements the Api port methods
 type Application struct {
-	db    ports.DbPort
-	image core.Image
-	file  ports.FilePort
-	dbKey ports.DbKeyPort
+	db     ports.DbPort
+	image  core.Image
+	creds  core.Credentials
+	file   ports.FilePort
+	dbauth ports.DbAuthenticationPort
 }
 
 //Constructor
