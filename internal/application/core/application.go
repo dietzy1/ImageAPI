@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func NewImage() *Image {
@@ -22,9 +23,11 @@ type Image struct {
 }
 
 type Credentials struct {
-	Name     string
-	Password string
-	Key      string
+	Username     string    `json:"name" bson:"name"`
+	Passwordhash string    `json:"passwordhash" bson:"passwordhash"`
+	Key          string    `json:"key" bson:"key"`
+	Created      time.Time `json:"created" bson:"created"`
+	Role         int       `json:"role" bson:"role"`
 }
 
 func (i Image) Validate(image Image) error {
@@ -44,10 +47,15 @@ func (i *Image) NewUUID() {
 	i.Uuid = uuid.New().String()
 }
 
+//can add a generic method for setting time
 func (i *Image) SetTime() {
 
 	//i.Created = time.Now().Format(time.RFC3339)
 	i.Created = time.Now()
+}
+
+func (c *Credentials) SetTime() {
+	c.Created = time.Now()
 }
 
 func GenerateAPIKey() string {
@@ -69,6 +77,15 @@ func ValidateKey(key string) bool {
 
 func testKeys() {
 
+}
+
+//method that hashes a password
+func (c *Credentials) Hash(creds string) string {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds), 8)
+	if err != nil {
+		return ""
+	}
+	return string(hashedPassword)
 }
 
 //TODO LIST

@@ -14,8 +14,10 @@ type DbPort interface {
 }
 
 //Need to implement mongodb methods on this interface
-type DbKeyPort interface {
+type DbAuthenticationPort interface {
 	StoreKey(string) error
 	DeleteKey(string) error
 	AuthenticateKey(string) bool
+	Signup(core.Credentials) error
+	Signin(string, string) error
 }

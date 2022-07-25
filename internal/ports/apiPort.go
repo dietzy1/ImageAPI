@@ -15,8 +15,10 @@ type ApiPort interface {
 	UpdateImage(w http.ResponseWriter, r *http.Request)
 }
 
-type ApiKeyPort interface {
+type AuthenticationPort interface {
 	AddKey(w http.ResponseWriter, r *http.Request)
 	DeleteKey(w http.ResponseWriter, r *http.Request)
 	AuthenticateKey(w http.ResponseWriter, r *http.Request)
+	Signup(w http.ResponseWriter, r *http.Request)
+	Signin(w http.ResponseWriter, r *http.Request)
 }

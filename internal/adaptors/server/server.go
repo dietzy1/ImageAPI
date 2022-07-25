@@ -12,9 +12,9 @@ import (
 )
 
 type ServerAdapter struct {
-	api    ports.ApiPort
-	router http.Handler
-	APIKey ports.ApiKeyPort
+	api            ports.ApiPort
+	router         http.Handler
+	Authentication ports.AuthenticationPort
 }
 
 //helper function
@@ -44,8 +44,8 @@ func Router(s *ServerAdapter) {
 	r.HandleFunc("/generateadminkey", s.generateAdminAPIKey).Methods(http.MethodGet)
 
 	//Login logout ROUTES
-	/* r.HandleFunc("", s.signin)
-	r.HandleFunc("", s.signup) */
+	r.HandleFunc("", s.signin)
+	r.HandleFunc("", s.signup)
 
 	sb := r.PathPrefix("/api/v0").Subrouter()
 	//Applies middleware to all subrouters
@@ -123,13 +123,21 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
-	s.APIKey.AddKey(w, r)
+	s.Authentication.AddKey(w, r)
 }
 
 func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
-	s.APIKey.AddKey(w, r)
+	s.Authentication.AddKey(w, r)
 }
 
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
+	s.Authentication.DeleteKey(w, r)
+}
 
+func (s *ServerAdapter) signup(w http.ResponseWriter, r *http.Request) {
+	s.Authentication.Signup(w, r)
+}
+
+func (s *ServerAdapter) signin(w http.ResponseWriter, r *http.Request) {
+	s.Authentication.Signin(w, r)
 }
