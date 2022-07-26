@@ -40,7 +40,7 @@ const Searchbar = ({ searchText }: any) => {
           />
 
           <button
-            className="flex-shrink-0 focus:outline-none focus:ring-[#00df9a] font-medium  bg-[#00df9a] hover:bg-teal-700 mr-4 hover:border-teal-700  text-white py-1 px-2 rounded-lg text-md"
+            className="flex-shrink-0 focus:outline-none focus:ring-greeny font-medium  bg-greeny hover:bg-teal-700 mr-4 hover:border-teal-700  text-white py-1 px-2 rounded-lg text-md"
             type="submit"
           >
             Search

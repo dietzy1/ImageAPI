@@ -8,7 +8,7 @@ import (
 //Authenticate API key
 func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.Authentication.AuthenticateKey(w, r)
+		//s.Authentication.AuthenticateKey(w, r)
 		next.ServeHTTP(w, r)
 	})
 }

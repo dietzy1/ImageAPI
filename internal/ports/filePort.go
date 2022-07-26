@@ -1,9 +1,12 @@
 package ports
 
-import "mime/multipart"
+import (
+	"context"
+	"mime/multipart"
+)
 
 //Implements the filedb methods
 type FilePort interface {
-	AddFile(uuid string, data multipart.File) error
-	DeleteFile(uuid string) error
+	AddFile(ctx context.Context, uuid string, data multipart.File) error
+	DeleteFile(ctx context.Context, uuid string) error
 }

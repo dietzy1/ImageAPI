@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -51,7 +52,7 @@ func Router(s *ServerAdapter) {
 	//Applies middleware to all subrouters
 	sb.Use(s.loggingMiddleware)
 	sb.Use(s.corsMiddleware)
-	sb.Use(s.authenticateKey)
+	//sb.Use(s.authenticateKey)
 	//sb.Use(s.rl.rateLimitingMiddleware)
 
 	sb.HandleFunc("/healthcheck", s.healthcheck)
@@ -83,37 +84,37 @@ func Router(s *ServerAdapter) {
 
 //Entry point for http calls
 func (s *ServerAdapter) findImage(w http.ResponseWriter, r *http.Request) {
-	s.api.FindImage(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.FindImage(ctx, w, r)
 }
 
 //Entry point for http calls
 func (s *ServerAdapter) findImages(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key := vars["key"]
-
-	fmt.Println(key)
-	//use the ports to communicate with the application to see if the structure of the key is ok
-
-	//If the structure of the key is ok then it can be passed along to the API which then should verify in the database that the key exists
-
-	//s.APIKey.CheckKey()
-
-	s.api.FindImages(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.FindImages(ctx, w, r)
 }
 
 //Entry point for http calls
 func (s *ServerAdapter) addImage(w http.ResponseWriter, r *http.Request) {
-	s.api.AddImage(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.AddImage(ctx, w, r)
 }
 
 //Entry point for http calls
 func (s *ServerAdapter) updateImage(w http.ResponseWriter, r *http.Request) {
-	s.api.UpdateImage(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.UpdateImage(ctx, w, r)
 }
 
 //Entry point for http calls
 func (s *ServerAdapter) deleteImage(w http.ResponseWriter, r *http.Request) {
-	s.api.DeleteImage(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.DeleteImage(ctx, w, r)
 }
 
 func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
@@ -123,21 +124,31 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
-	s.Authentication.AddKey(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Authentication.AddKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
-	s.Authentication.AddKey(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Authentication.AddKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
-	s.Authentication.DeleteKey(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Authentication.DeleteKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) signup(w http.ResponseWriter, r *http.Request) {
-	s.Authentication.Signup(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Authentication.Signup(ctx, w, r)
 }
 
 func (s *ServerAdapter) signin(w http.ResponseWriter, r *http.Request) {
-	s.Authentication.Signin(w, r)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Authentication.Signin(ctx, w, r)
 }

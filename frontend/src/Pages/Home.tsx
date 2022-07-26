@@ -45,12 +45,11 @@ function Home() {
         <FrontGallery />
       </div>
 
-      <div className="">
+      <div>
         <div className="relative border-l border-white h-full border-r ml-14 mr-14 ">
           <hr className="my-6 sm:mx-auto  " />
           <div className="container mx-auto">
             {/*vertical line element*/}
-
             <Searchbar searchText={(text: any) => setTerm(text)} />
 
             {!loading && images.length === 0 && (
@@ -58,11 +57,6 @@ function Home() {
                 <h1 className="text-5xl text-center mx-auto mt-32">
                   Unable to find images :/
                 </h1>
-                <img
-                  className="w-64 mx-2 self-start flex-none"
-                  src={image1}
-                  alt=""
-                />
               </div>
             )}
 

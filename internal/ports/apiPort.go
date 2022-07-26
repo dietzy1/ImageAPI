@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -8,17 +9,17 @@ import (
 
 //implement http server interface methods
 type ApiPort interface {
-	FindImage(w http.ResponseWriter, r *http.Request)
-	FindImages(w http.ResponseWriter, r *http.Request)
-	AddImage(w http.ResponseWriter, r *http.Request)
-	DeleteImage(w http.ResponseWriter, r *http.Request)
-	UpdateImage(w http.ResponseWriter, r *http.Request)
+	FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }
 
 type AuthenticationPort interface {
-	AddKey(w http.ResponseWriter, r *http.Request)
-	DeleteKey(w http.ResponseWriter, r *http.Request)
-	AuthenticateKey(w http.ResponseWriter, r *http.Request)
-	Signup(w http.ResponseWriter, r *http.Request)
-	Signin(w http.ResponseWriter, r *http.Request)
+	AddKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	DeleteKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	Signup(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	Signin(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }

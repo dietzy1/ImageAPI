@@ -5,6 +5,7 @@ import (
 
 	//"image/jpeg"
 
+	"context"
 	"fmt"
 	"image"
 	_ "image/gif"
@@ -25,7 +26,7 @@ func NewFileAdapter() *FileAdapter {
 	return &FileAdapter{}
 }
 
-func (f *FileAdapter) AddFile(uuid string, data multipart.File) error {
+func (f *FileAdapter) AddFile(ctx context.Context, uuid string, data multipart.File) error {
 	os.Chdir(os.Getenv("FILE_DIR"))
 	file, err := os.OpenFile(uuid+".jpg", os.O_WRONLY|os.O_CREATE, 0666)
 	defer file.Close()
@@ -45,7 +46,7 @@ func (f *FileAdapter) AddFile(uuid string, data multipart.File) error {
 	return nil
 }
 
-func (f *FileAdapter) DeleteFile(uuid string) error {
+func (f *FileAdapter) DeleteFile(ctx context.Context, uuid string) error {
 	os.Chdir(os.Getenv("FILE_DIR"))
 	err := os.Remove(uuid + ".jpg")
 	if err != nil {

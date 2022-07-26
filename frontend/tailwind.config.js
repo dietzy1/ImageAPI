@@ -4,9 +4,13 @@ const { transform } = require("typescript");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
   theme: {
     extend: {
+      colors: {
+        blacky: "#000300",
+        greeny: "#00df9a",
+      },
       animation: {
         slide: "slide 36s linear infinite",
       },

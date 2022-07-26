@@ -23,7 +23,7 @@ type Image struct {
 }
 
 type Credentials struct {
-	Username     string    `json:"name" bson:"name"`
+	Username     string    `json:"username" bson:"username"`
 	Passwordhash string    `json:"passwordhash" bson:"passwordhash"`
 	Key          string    `json:"key" bson:"key"`
 	Created      time.Time `json:"created" bson:"created"`
@@ -40,6 +40,19 @@ func (i Image) Validate(image Image) error {
 		return errors.New("")
 	}
 	fmt.Println("Validation ok")
+	return nil
+}
+
+func (c Credentials) Validate(crreds Credentials) error {
+	if c.Username == "" {
+		return errors.New("No username")
+	}
+	if c.Passwordhash == "" {
+		return errors.New("No password")
+	}
+	if c.Key == "" {
+		return errors.New("No key")
+	}
 	return nil
 }
 
@@ -80,12 +93,13 @@ func testKeys() {
 }
 
 //method that hashes a password
-func (c *Credentials) Hash(creds string) string {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds), 8)
+func (c *Credentials) Hash(creds Credentials) Credentials {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Passwordhash), 8)
 	if err != nil {
-		return ""
+		fmt.Println("Error hashing password")
 	}
-	return string(hashedPassword)
+	c.Passwordhash = string(hashedPassword)
+	return *c
 }
 
 //TODO LIST

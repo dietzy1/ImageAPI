@@ -24,6 +24,7 @@ type DbAdapter struct {
 //Constructor
 func NewDbAdapter() (*DbAdapter, error) {
 	fmt.Println("Initiating DbAdabter")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv(("DB_URI"))))
@@ -34,31 +35,38 @@ func NewDbAdapter() (*DbAdapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DbAdapter{client: client, timeout: 5 * time.Second}, nil
-	//Maybe I just need to only return the db as a variable
+
+	a := &DbAdapter{client: client, timeout: 5 * time.Second}
+	//Hard coded index
+	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
+	//a.NewIndex("Credential-Database", "credentials", "key", true)
+
+	return a, nil
+
 }
 
-//Mongodb index
-func (a *DbAdapter) NewIndex() {
+//Mongodb index - b tree
+func (a *DbAdapter) NewIndex(database string, collectionName string, field string, unique bool) {
 	mod := mongo.IndexModel{
-		Keys:    bson.M{"tags": "1"},
-		Options: options.Index().SetUnique(false),
+		Keys:    bson.M{field: 1},
+		Options: options.Index().SetUnique(unique),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	collection := a.client.Database("Image-Database").Collection("images")
+	collection := a.client.Database(database).Collection(collectionName)
 
-	_, err := collection.Indexes().CreateOne(ctx, mod)
+	index, err := collection.Indexes().CreateOne(ctx, mod)
 	if err != nil {
 		// 5. Something went wrong, we log it and return false
 		fmt.Println(err.Error())
 		return
 	}
+	fmt.Println("Created new index:", index)
 	return
 }
 
-func (a *DbAdapter) FindImage(querytype string, query string) (*core.Image, error) {
+func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query string) (*core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -74,7 +82,7 @@ func (a *DbAdapter) FindImage(querytype string, query string) (*core.Image, erro
 	return image, nil
 }
 
-func (a *DbAdapter) FindImages(querytype string, query []string, quantity int) ([]core.Image, error) {
+func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -102,7 +110,7 @@ func (a *DbAdapter) FindImages(querytype string, query []string, quantity int) (
 	return images, nil
 }
 
-func (a *DbAdapter) FindImages1(querytype string, query []string, quantity int) ([]core.Image, error) {
+func (a *DbAdapter) FindImages1(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -130,7 +138,7 @@ func (a *DbAdapter) FindImages1(querytype string, query []string, quantity int) 
 	return images, nil
 }
 
-func (a *DbAdapter) StoreImage(image *core.Image) error {
+func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -141,7 +149,7 @@ func (a *DbAdapter) StoreImage(image *core.Image) error {
 	return nil
 }
 
-func (a *DbAdapter) UpdateImage(uuid string, image *core.Image) error {
+func (a *DbAdapter) UpdateImage(ctx context.Context, uuid string, image *core.Image) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
@@ -152,7 +160,7 @@ func (a *DbAdapter) UpdateImage(uuid string, image *core.Image) error {
 	return nil
 }
 
-func (a *DbAdapter) DeleteImage(uuid string) error {
+func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
 	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")

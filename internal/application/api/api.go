@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -27,7 +28,7 @@ func NewApplication(db ports.DbPort, file ports.FilePort) *Application {
 }
 
 //Implements methods on the APi port
-func (a Application) FindImage(w http.ResponseWriter, r *http.Request) {
+func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	querytype := "uuid"
 	query := vars["uuid"]
@@ -36,7 +37,7 @@ func (a Application) FindImage(w http.ResponseWriter, r *http.Request) {
 		query = vars["tag"]
 	}
 
-	image, err := a.db.FindImage(querytype, query)
+	image, err := a.db.FindImage(ctx, querytype, query)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -51,7 +52,7 @@ func (a Application) FindImage(w http.ResponseWriter, r *http.Request) {
 }
 
 //Implements methods on the APi port
-func (a Application) FindImages(w http.ResponseWriter, r *http.Request) {
+func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	querytype := "tags"
 	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
@@ -62,7 +63,7 @@ func (a Application) FindImages(w http.ResponseWriter, r *http.Request) {
 	tags := strings.Join(q["tags"], "")
 	query = strings.Split(tags, ", ")
 
-	images, err := a.db.FindImages(querytype, query, quantity)
+	images, err := a.db.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -78,7 +79,7 @@ func (a Application) FindImages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(images)
 }
 
-func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
+func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -102,16 +103,16 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode("Missing name or tag")
 		return
 	}
-	err = a.db.StoreImage(&a.image)
+	err = a.db.StoreImage(ctx, &a.image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
-	err = a.file.AddFile(a.image.Uuid, data)
+	err = a.file.AddFile(ctx, a.image.Uuid, data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		a.db.DeleteImage(a.image.Uuid)
+		a.db.DeleteImage(ctx, a.image.Uuid)
 		_ = json.NewEncoder(w).Encode("some other error")
 		return
 	}
@@ -119,9 +120,9 @@ func (a Application) AddImage(w http.ResponseWriter, r *http.Request) {
 }
 
 //Implements methods on the APi port
-func (a Application) DeleteImage(w http.ResponseWriter, r *http.Request) {
+func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	err := a.db.DeleteImage(vars["uuid"])
+	err := a.db.DeleteImage(ctx, vars["uuid"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to delete image")
@@ -132,7 +133,7 @@ func (a Application) DeleteImage(w http.ResponseWriter, r *http.Request) {
 }
 
 //Implements methods on the APi port
-func (a Application) UpdateImage(w http.ResponseWriter, r *http.Request) {
+func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 
@@ -143,7 +144,7 @@ func (a Application) UpdateImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	err = a.db.UpdateImage(vars["uuid"], &a.image)
+	err = a.db.UpdateImage(ctx, vars["uuid"], &a.image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to update image")
