@@ -13,18 +13,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
+	"github.com/go-redis/redis/v8"
 )
 
 //Implements the db port interface and dbApiKey interface
 type DbAdapter struct {
-	client  *mongo.Client
-	timeout time.Duration
+	client      *mongo.Client
+	redisClient *redis.Client
 }
 
 //Constructor
-func NewDbAdapter() (*DbAdapter, error) {
-	fmt.Println("Initiating DbAdabter")
-
+func NewMongoAdapter() (*DbAdapter, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv(("DB_URI"))))
@@ -36,10 +35,12 @@ func NewDbAdapter() (*DbAdapter, error) {
 		return nil, err
 	}
 
-	a := &DbAdapter{client: client, timeout: 5 * time.Second}
+	a := &DbAdapter{client: client}
 	//Hard coded index
-	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
-	//a.NewIndex("Credential-Database", "credentials", "key", true)
+	/* 	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
+	   	a.NewIndex("Image-Database", "images", "uuid", false)
+	   	a.NewIndex("Credential-Database", "credentials", "key", false)
+	   	a.NewIndex("Credential-Database", "credentials", "username", false) */
 
 	return a, nil
 
@@ -67,8 +68,6 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 }
 
 func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query string) (*core.Image, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	cursor, err := collection.Find(ctx, bson.D{{Key: querytype, Value: query}})
 	if err != nil {
@@ -83,8 +82,6 @@ func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query strin
 }
 
 func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	images := []core.Image{}
 
@@ -111,8 +108,6 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 }
 
 func (a *DbAdapter) FindImages1(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	images := []core.Image{}
 
@@ -139,8 +134,6 @@ func (a *DbAdapter) FindImages1(ctx context.Context, querytype string, query []s
 }
 
 func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.InsertOne(ctx, image)
 	if err != nil {
@@ -150,8 +143,6 @@ func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 }
 
 func (a *DbAdapter) UpdateImage(ctx context.Context, uuid string, image *core.Image) error {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.UpdateOne(ctx, bson.M{"uuid": uuid}, bson.M{"$set": image})
 	if err != nil {
@@ -161,8 +152,6 @@ func (a *DbAdapter) UpdateImage(ctx context.Context, uuid string, image *core.Im
 }
 
 func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
-	defer cancel()
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.DeleteOne(ctx, bson.M{"uuid": uuid})
 	if err != nil {

@@ -19,9 +19,15 @@ type DbPort interface {
 
 //Need to implement mongodb methods on this interface
 type DbAuthenticationPort interface {
-	StoreKey(string, string) error
-	DeleteKey(string) error
-	AuthenticateKey(string) bool
-	Signup(core.Credentials) error
-	Signin(core.Credentials) error
+	StoreKey(ctx context.Context, newKey string, username string) error
+	DeleteKey(ctx context.Context, username string) error
+	AuthenticateKey(ctx context.Context, key string) bool
+	Signup(ctx context.Context, creds core.Credentials) error
+	Signin(ctx context.Context, username string) (core.Credentials, error)
+}
+
+type SessionPort interface {
+	Set(ctx context.Context, key string, session interface{}) error
+	Get(ctx context.Context, key string) error
+	Delete(ctx context.Context, key string) error
 }

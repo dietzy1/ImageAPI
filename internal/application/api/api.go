@@ -15,16 +15,17 @@ import (
 
 //Implements the Api port methods
 type Application struct {
-	db     ports.DbPort
-	image  core.Image
-	creds  core.Credentials
-	file   ports.FilePort
-	dbauth ports.DbAuthenticationPort
+	db      ports.DbPort
+	dbauth  ports.DbAuthenticationPort
+	session ports.SessionPort
+	file    ports.FilePort
+	image   core.Image
+	creds   core.Credentials
 }
 
 //Constructor
-func NewApplication(db ports.DbPort, file ports.FilePort) *Application {
-	return &Application{db: db, file: file}
+func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, file ports.FilePort, session ports.SessionPort) *Application {
+	return &Application{db: db, dbauth: dbauth, file: file, session: session}
 }
 
 //Implements methods on the APi port
@@ -86,30 +87,32 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		_ = json.NewEncoder(w).Encode("Unable to add image while parsing")
 		return
 	}
-	a.image.Name = r.Form.Get("name")
-	tags := strings.Join(r.Form["tags"], "")
-	a.image.Tags = strings.Split(tags, ", ")
-	a.image.NewUUID()
-	a.image.SetTime()
+	image := core.Image{
+		Name:     r.Form.Get("Name"),
+		Uuid:     a.image.NewUUID(),
+		Tags:     core.Split(r.Form.Get("Tags")),
+		Created:  a.image.SetTime(),
+		Filepath: "http://localhost:8000/fileserver/" + a.image.Uuid + ".jpg",
+	}
 	data, _, err := r.FormFile("data")
 	defer data.Close()
 	if err != nil {
 		_ = json.NewEncoder(w).Encode("Unable to parse file data")
 		return
 	}
-	a.image.Validate(a.image)
+	image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Missing name or tag")
 		return
 	}
-	err = a.db.StoreImage(ctx, &a.image)
+	err = a.db.StoreImage(ctx, &image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
-	err = a.file.AddFile(ctx, a.image.Uuid, data)
+	err = a.file.AddFile(ctx, image.Uuid, data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		a.db.DeleteImage(ctx, a.image.Uuid)

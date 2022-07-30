@@ -4,15 +4,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func NewImage() *Image {
-	return &Image{}
-}
 
 type Image struct {
 	Name     string    `json:"name" bson:"name"`
@@ -28,6 +25,7 @@ type Credentials struct {
 	Key          string    `json:"key" bson:"key"`
 	Created      time.Time `json:"created" bson:"created"`
 	Role         int       `json:"role" bson:"role"`
+	//Session ID
 }
 
 func (i Image) Validate(image Image) error {
@@ -56,15 +54,14 @@ func (c Credentials) Validate(crreds Credentials) error {
 	return nil
 }
 
-func (i *Image) NewUUID() {
-	i.Uuid = uuid.New().String()
+func (i *Image) NewUUID() string {
+	return uuid.New().String()
 }
 
 //can add a generic method for setting time
-func (i *Image) SetTime() {
-
+func (i *Image) SetTime() time.Time {
 	//i.Created = time.Now().Format(time.RFC3339)
-	i.Created = time.Now()
+	return time.Now()
 }
 
 func (c *Credentials) SetTime() {
@@ -88,18 +85,26 @@ func ValidateKey(key string) bool {
 	return true
 }
 
-func testKeys() {
-
+//Input r.Form.Get("Tags")
+func Split(input string) []string {
+	input = strings.TrimSpace(input)
+	return strings.Split(input, ",")
 }
 
-//method that hashes a password
-func (c *Credentials) Hash(creds Credentials) Credentials {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Passwordhash), 8)
+func (c *Credentials) Hash(password string) string {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
 	if err != nil {
 		fmt.Println("Error hashing password")
 	}
-	c.Passwordhash = string(hashedPassword)
-	return *c
+	return string(hashedPassword)
+}
+
+func (c *Credentials) CompareHash(storedpassword string, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(password))
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 //TODO LIST
@@ -107,7 +112,3 @@ func (c *Credentials) Hash(creds Credentials) Credentials {
 //Generate api keys -- &&endpoint
 //generate admin api key && endpoint
 //implement login system
-//implement indexing in mongodb proberly
-
-//need to implement system that verifies the structure of the API key so keys without a certain structure is tossed before
-//Implement context

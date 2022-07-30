@@ -15,7 +15,7 @@ import (
 type ServerAdapter struct {
 	api            ports.ApiPort
 	router         http.Handler
-	Authentication ports.AuthenticationPort
+	authentication ports.AuthenticationPort
 }
 
 //helper function
@@ -26,8 +26,8 @@ func analyzeInterface(mp ports.ApiPort) {
 }
 
 //Constructor
-func NewServerAdapter(api ports.ApiPort) *ServerAdapter {
-	return &ServerAdapter{api: api}
+func NewServerAdapter(api ports.ApiPort, authentication ports.AuthenticationPort) *ServerAdapter {
+	return &ServerAdapter{api: api, authentication: authentication}
 }
 
 //Wrapper for router object
@@ -44,9 +44,11 @@ func Router(s *ServerAdapter) {
 	r.HandleFunc("/generatekey/", s.generateAPIKey).Methods(http.MethodGet)
 	r.HandleFunc("/generateadminkey", s.generateAdminAPIKey).Methods(http.MethodGet)
 
+	//Attach a subrouter to the main router for authentication paths
+	//au := r.PathPrefix("/auth").Subrouter()
 	//Login logout ROUTES
-	r.HandleFunc("", s.signin)
-	r.HandleFunc("", s.signup)
+	r.HandleFunc("/signin/", s.signin).Methods(http.MethodPost)
+	r.HandleFunc("/signup/", s.signup).Methods(http.MethodPost)
 
 	sb := r.PathPrefix("/api/v0").Subrouter()
 	//Applies middleware to all subrouters
@@ -126,29 +128,30 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.Authentication.AddKey(ctx, w, r)
+	s.authentication.AddKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.Authentication.AddKey(ctx, w, r)
+	s.authentication.AddKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.Authentication.DeleteKey(ctx, w, r)
+	s.authentication.DeleteKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) signup(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Signup called")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.Authentication.Signup(ctx, w, r)
+	s.authentication.Signup(ctx, w, r)
 }
 
 func (s *ServerAdapter) signin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.Authentication.Signin(ctx, w, r)
+	s.authentication.Signin(ctx, w, r)
 }
