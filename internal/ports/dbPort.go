@@ -30,5 +30,5 @@ type SessionPort interface {
 	Set(ctx context.Context, key string, session interface{}) error
 	Get(ctx context.Context, key string) (string, error)
 	Delete(ctx context.Context, key string) error
-	Expire(ctx context.Context, key string) error
+	Update(ctx context.Context, key string) error
 }

@@ -54,8 +54,8 @@ func Router(s *ServerAdapter) {
 	//Applies middleware to all subrouters
 	sb.Use(s.loggingMiddleware)
 	sb.Use(s.corsMiddleware)
+	sb.Use(s.rateLimitingMiddleware)
 	//sb.Use(s.authenticateKey)
-	//sb.Use(s.rl.rateLimitingMiddleware)
 
 	sb.HandleFunc("/healthcheck", s.healthcheck)
 

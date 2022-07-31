@@ -107,32 +107,6 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 	return images, nil
 }
 
-func (a *DbAdapter) FindImages1(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
-	collection := a.client.Database("Image-Database").Collection("images")
-	images := []core.Image{}
-
-	var otps bson.D
-	if len(query) == 1 {
-		otps = bson.D{{Key: querytype, Value: query[0]}}
-	}
-	if len(query) == 2 {
-		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}}
-	}
-	if len(query) >= 3 {
-		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
-	}
-	cursor, err := collection.Find(ctx, otps)
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &images); err != nil {
-		return nil, err
-	}
-	images = randomizeArray(images, quantity)
-
-	return images, nil
-}
-
 func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.InsertOne(ctx, image)

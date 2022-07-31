@@ -20,7 +20,14 @@ func (a *DbAdapter) StoreKey(ctx context.Context, newKey string, username string
 }
 
 func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) (string, bool) {
-	return "", true
+	collection := a.client.Database("Credential-Database").Collection("Credentials")
+	//Check if the key is in the database if not return false
+	cred := core.Credentials{}
+	err := collection.FindOne(ctx, bson.M{"key": key}).Decode(&cred)
+	if err != nil {
+		return "", false
+	}
+	return cred.Username, true
 }
 
 func (a *DbAdapter) DeleteKey(ctx context.Context, username string) error {

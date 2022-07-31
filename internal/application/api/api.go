@@ -80,6 +80,7 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 	json.NewEncoder(w).Encode(images)
 }
 
+//Need to implement role
 func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -122,6 +123,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	w.WriteHeader(http.StatusCreated)
 }
 
+//need to implement role
 //Implements methods on the APi port
 func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -135,6 +137,7 @@ func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 }
 
+//Need to implement role
 //Implements methods on the APi port
 func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

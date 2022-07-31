@@ -179,7 +179,7 @@ func (a Application) Refresh(ctx context.Context, w http.ResponseWriter, r *http
 		return
 	}
 	//ACCESS THE REDIS DATABASE AND FIND THE USERNAME AND UPDATE THE DELETE TIME
-	err = a.session.Expire(ctx, cookie.Value)
+	err = a.session.Update(ctx, cookie.Value)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to update session cookie")

@@ -4,7 +4,10 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"sync"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 //API key authentication middleware
@@ -41,45 +44,35 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+var cooldown = make(map[string]*rate.Limiter)
+
+type rateLimiting struct {
+	c  *rate.Limiter
+	mu sync.Mutex
+}
+
 //Rate limiting middleware
-/* func (rl *rateLimiting) rateLimitingMiddleware(next http.Handler) http.Handler {
+func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//key := mux.Vars(r)["key"]
 		key := "1"
-		rl.c = rl.validateKey(key)
-		if rl.c.Allow() != true {
+		rl := rateLimiting{}
+		rl.c = rl.ratelimitKey(key)
+		if !rl.c.Allow() {
 			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-} */
-
-//Authentication middleware
-/* func (s *ServerAdapter) authenticationMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		next.ServeHTTP(w, r)
-	})
-} */
-
-/* var cooldown = make(map[string]*rate.Limiter)
-var mu sync.Mutex */
-
-/* type rateLimiting struct {
-	c  *rate.Limiter
-	mu sync.Mutex
 }
 
-func (rl *rateLimiting) validateKey(key string) *rate.Limiter {
+func (rl *rateLimiting) ratelimitKey(key string) *rate.Limiter {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-
-	cd := make(map[string]*rate.Limiter)
-	limiter, exists := cd[key]
+	limiter, exists := cooldown[key]
 	if !exists {
-		limiter = rate.NewLimiter(1, 1)
-		cd[key] = limiter
+		limiter = rate.NewLimiter(1/2, 1) //Still need to configure the exact rate limit
+		cooldown[key] = limiter
 	}
 	return limiter
-} */
+}
