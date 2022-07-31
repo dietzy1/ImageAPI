@@ -37,9 +37,20 @@ func (a Application) DeleteKey(ctx context.Context, w http.ResponseWriter, r *ht
 	}
 }
 
-func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	//Perform a check vs the database if the provided key exists in the database
-	return
+func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool {
+	vars := mux.Vars(r)
+	_, err := a.session.Get(ctx, vars["key"])
+	if err == nil {
+		return true
+	}
+	result, ok := a.dbauth.AuthenticateKey(ctx, vars["key"])
+	if ok != true {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
+		return false
+	}
+	err = a.session.Set(ctx, vars["key"], result)
+	return true
 }
 
 //Generates a new key on signup
@@ -87,36 +98,91 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 	storedCreds, err := a.dbauth.Signin(ctx, creds.Username)
 
 	if a.creds.CompareHash(storedCreds.Passwordhash, creds.Passwordhash) != true {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode("Unable to signin")
 		return
 	}
-	//User is verified at this point
-	//err = a.StoreKey(ctx, creds.Key, creds.Username)
-
-	//Call redis to store the key in a cache
-
-	sessionToken := uuid.New().String() //Need to sign this with a secret
-	ExpiresAt := time.Now().Add(time.Second * 180)
-
-	//declare the object to be stored in the session
-	session := session{
-		username: creds.Username,
-		expires:  ExpiresAt,
-	}
-	//Store the session in the redis cache
-
-	err = a.session.Set(ctx, sessionToken, session)
+	sessionToken := uuid.New().String()
+	err = a.session.Set(ctx, sessionToken, creds.Username)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to store session in redis")
 		return
 	}
-	//fmt.Println(sessions)
-
 	http.SetCookie(w, &http.Cookie{
 		Name:    "session_token",
 		Value:   sessionToken,
-		Expires: ExpiresAt,
+		Expires: time.Now().Add(time.Second * 180),
 	})
+}
+
+func (a Application) Logout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
+		return
+	}
+	err = a.session.Delete(ctx, cookie.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to delete session cookie")
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:   "session_token",
+		Value:  "",
+		MaxAge: -1,
+	})
+}
+
+func (a Application) ProtectPath(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			_ = json.NewEncoder(w).Encode("Unable to get session cookie")
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	sessionToken := cookie.Value
+
+	//Compare with the session token in the redis database
+	username, err := a.session.Get(ctx, sessionToken)
+	if err != nil || username == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode("Session does not exist in redis db")
+		return
+	}
+	//if err not equal to nil then the session token is valid
+
+	//Set some variable to approved
+}
+
+func (a Application) Refresh(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			_ = json.NewEncoder(w).Encode("Unable to get session cookie")
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	_, err = a.session.Get(ctx, cookie.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode("Session does not exist in redis db")
+		return
+	}
+	//ACCESS THE REDIS DATABASE AND FIND THE USERNAME AND UPDATE THE DELETE TIME
+	err = a.session.Expire(ctx, cookie.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to update session cookie")
+		return
+	}
 }

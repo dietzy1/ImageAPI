@@ -21,13 +21,14 @@ type DbPort interface {
 type DbAuthenticationPort interface {
 	StoreKey(ctx context.Context, newKey string, username string) error
 	DeleteKey(ctx context.Context, username string) error
-	AuthenticateKey(ctx context.Context, key string) bool
+	AuthenticateKey(ctx context.Context, key string) (string, bool)
 	Signup(ctx context.Context, creds core.Credentials) error
 	Signin(ctx context.Context, username string) (core.Credentials, error)
 }
 
 type SessionPort interface {
 	Set(ctx context.Context, key string, session interface{}) error
-	Get(ctx context.Context, key string) error
+	Get(ctx context.Context, key string) (string, error)
 	Delete(ctx context.Context, key string) error
+	Expire(ctx context.Context, key string) error
 }

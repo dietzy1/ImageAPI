@@ -1,14 +1,20 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 )
 
-//Authenticate API key
+//API key authentication middleware
 func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//s.Authentication.AuthenticateKey(w, r)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if s.authentication.AuthenticateKey(ctx, w, r) != true {
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -21,6 +27,7 @@ func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+//Should prolly disable this shit later
 //Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +58,7 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 //Authentication middleware
 /* func (s *ServerAdapter) authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		next.ServeHTTP(w, r)
 	})
 } */

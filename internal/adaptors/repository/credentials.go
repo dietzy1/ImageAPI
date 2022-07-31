@@ -19,8 +19,8 @@ func (a *DbAdapter) StoreKey(ctx context.Context, newKey string, username string
 	return nil
 }
 
-func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) bool {
-	return true
+func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) (string, bool) {
+	return "", true
 }
 
 func (a *DbAdapter) DeleteKey(ctx context.Context, username string) error {
