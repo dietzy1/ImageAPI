@@ -8,7 +8,7 @@ function Text() {
         <h1 className="text-2xl font-bold text-gray-500">
           Gain access to an API of hundreds of sorted, high quality images
         </h1>
-        <button className="bg-[#00df9a] w-[200px] rounded-md font-medium my-6 mx-auto py-3 text-black hover:bg-white">
+        <button className="bg-greeny w-[200px] rounded-md font-medium my-6 mx-auto py-3 text-black hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30">
           Get started
         </button>
       </div>

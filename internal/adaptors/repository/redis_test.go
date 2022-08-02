@@ -9,19 +9,20 @@ import (
 )
 
 //Mock test object
-type mock struct {
+type redismock struct {
 	redisClient ports.SessionPort
 	key         string
 	value       string
 }
 
+
 //Mock test constructor
-func newMock() *mock {
+func newredisMock() *redismock {
 	redis, err := NewRedisAdapter()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &mock{redisClient: redis, key: "testkey", value: "testvalue"}
+	return &redismock{redisClient: redis, key: "testkey", value: "testvalue"}
 }
 
 func TestMain(m *testing.M) {
@@ -29,7 +30,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestRedis(t *testing.T) {
-	mock := newMock()
+	mock := newredisMock()
 	ctx := context.Background()
 	mock.redisClient.Get(ctx, mock.key)
 

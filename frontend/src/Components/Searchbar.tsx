@@ -10,16 +10,12 @@ const Searchbar = ({ searchText }: any) => {
   };
 
   return (
-    <div className="max-w-lg rounded overflow-hidden my-10 mx-auto justify-center ">
-      <h1 className="text-white mx-auto text-center text-5xl font-bold py-6">
-        Search by tag!
-      </h1>
-
-      <form onSubmit={onSubmit} className="w-full">
-        <div className="flex items-center border-b-2  py-2 bg-white rounded-xl ml-4">
+    <div className="rounded mx-auto justify-center max-w-md flex ">
+      <form onSubmit={onSubmit} className="">
+        <div className="flex items-center border-b-2  py-2 bg-white rounded-xl">
           <svg
             aria-hidden="true"
-            className="w-6 h-6 text-gray-500 dark:text-gray-400"
+            className="w-6 h-6 ml-3 text-gray-500 dark:text-gray-400 pointer-events-none"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

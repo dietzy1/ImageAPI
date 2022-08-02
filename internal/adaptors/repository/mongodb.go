@@ -59,7 +59,6 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 
 	index, err := collection.Indexes().CreateOne(ctx, mod)
 	if err != nil {
-		// 5. Something went wrong, we log it and return false
 		fmt.Println(err.Error())
 		return
 	}

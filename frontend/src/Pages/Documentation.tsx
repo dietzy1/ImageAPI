@@ -1,5 +1,6 @@
 import React from "react";
-import Footer from "../Components/Footer";
+import { FooterNoSearch } from "../Components/Footer";
+import Loginform from "../Components/Loginform";
 import Navbar from "../Components/Navbar";
 
 function Documentation() {
@@ -13,8 +14,10 @@ function Documentation() {
         <div>Request multiple images: localhost:8000/api/v0/images/</div>
 
         <span></span>
+        <Loginform />
       </div>
-      <Footer />
+
+      <FooterNoSearch />
     </div>
   );
 }

@@ -13,12 +13,14 @@ module.exports = {
       },
       animation: {
         slide: "slide 36s linear infinite",
+        customrotate: "customrotate",
       },
       keyframes: {
         slide: {
           "0%": { transform: "translate3d(0, 0, 0)" },
           "100%": { transform: "translate3d(-108rem, 0, 0)" },
         },
+        customrotate: { transform: "rotate(180deg)" },
       },
     },
   },

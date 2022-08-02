@@ -60,6 +60,7 @@ func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 		rl.c = rl.ratelimitKey(key)
 		if !rl.c.Allow() {
 			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
+			log.Default().Printf("Rate limit exceeded for key %s", key)
 			return
 		}
 		next.ServeHTTP(w, r)
