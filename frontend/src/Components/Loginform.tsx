@@ -1,67 +1,112 @@
 import ReactDOM from "react-dom";
 import Navbar from "./Navbar";
+import { useState } from "react";
 
 //Need to add an x button at the upper right corner to close the modal
 //https://stackoverflow.com/questions/63721055/react-hooks-remember-me-checkbox-in-login-form-not-working
 
-export default function Loginform({ open, onClose }: any) {
+/* export interface userType {
+  username: string;
+  password: string;
+} */
+
+export function Loginform({ open, onClose }: any) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
   if (!open) return null;
 
   return ReactDOM.createPortal(
-    <div
-      className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
-      onClick={onClose}
-    >
+    <div className="fixed z-10">
+      <Navbar />
       <div
-        className=" z-[1]"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
+        onClick={onClose}
       >
-        <div className="flex flex-col justify-center ">
-          <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
-            <p
-              onClick={onClose}
-              className="flex justify-end text-white text-bold text-xl"
-            >
-              x
-            </p>
-            <h2 className="text-4xl font-bold text-white text-center">
-              Sign in
-            </h2>
-            <div className="flex flex-col text-gray-400 py-2">
-              <label className="text-start" htmlFor="username">
-                User Name
-              </label>
-              <input
-                className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none"
-                type="text"
-              />
-            </div>
-            <div className="flex flex-col text-gray-400 py-2">
-              <label className="text-start" htmlFor="password">
-                Password
-              </label>
-              <input
-                className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none"
-                type="password"
-              />
-            </div>
-            <div className=" text-gray-400 py-2">
-              <p className="flex items-center">
-                <input className="mr-2" type="checkbox" /> Remember Me
+        <div
+          className=" z-[1]"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <div className="flex flex-col justify-center ">
+            <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
+              <p
+                onClick={onClose}
+                className="flex justify-end text-white text-bold text-xl"
+              >
+                x
               </p>
-            </div>
-            <button
-              className="w-full my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
-              type="submit"
-            >
-              Sign in
-            </button>
-          </form>
+              <h2 className="text-4xl font-bold text-white text-center">
+                Sign in
+              </h2>
+              <div className="flex flex-col text-gray-400 py-2">
+                <label className="text-start" htmlFor="username">
+                  User Name
+                </label>
+                <input
+                  className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none"
+                  type="text"
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col text-gray-400 py-2">
+                <label className="text-start" htmlFor="password">
+                  Password
+                </label>
+                <input
+                  className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none"
+                  type="password"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className=" text-gray-400 py-2">
+                <p className="flex items-center">
+                  <input className="mr-2" type="checkbox" /> Remember Me
+                </p>
+              </div>
+              <button
+                className="w-full my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
+                type="submit"
+                onClick={() => {
+                  loginUser(username, password);
+                }}
+              >
+                Sign in
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>,
     document.getElementById("portal")!
   );
+}
+
+//https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#requests_with_credentials
+//https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+//https://stackoverflow.com/questions/1134290/cookies-on-localhost-with-explicit-domain
+
+export async function loginUser(username: string, password: string) {
+  const formData = new FormData();
+  formData.set("username", username);
+  formData.set("password", password);
+
+  return await fetch("http://localhost:8000/auth/signin/", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+    //Important the request must come from localhost:3000 and not localhost:3000? -Quite litterally with ? aswell
+  });
+}
+
+export async function logoutUser() {
+  return fetch("http://localhost:8000/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      credentials: "include",
+    },
+  });
 }

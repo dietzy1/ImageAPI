@@ -1,4 +1,3 @@
-import React from "react";
 import "../index.css";
 
 const image =
@@ -14,64 +13,131 @@ const image1 =
 //This is not the solution its a single large image with the other images that scrolls
 function FrontGallery() {
   return (
-    <div className="">
+    <div>
       <hr className="my-6 sm:mx-auto  " />
       <div className="overflow-hidden pb-4 ">
         <div className="flex -mx-4 animate-slide">
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/test1.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/2.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/3.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/4.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/5.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/6.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/7.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/8.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/9.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/10.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/11.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/12.jpg"
+            alt=""
+          />
 
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-        </div>
-      </div>
-      <div className="overflow-hidden pb-4">
-        <div className="flex -mx-4 animate-slide">
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image1} alt="" />
-          <img className="w-32 mx-2 self-start flex-none" src={image} alt="" />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/test1.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/2.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/3.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/4.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/5.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/6.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/7.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/8.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/9.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/10.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/11.jpg"
+            alt=""
+          />
+          <img
+            className="w-32 mx-2 self-start flex-none"
+            src="/static/pepes/12.jpg"
+            alt=""
+          />
         </div>
       </div>
       <hr className="my-6 sm:mx-auto  " />

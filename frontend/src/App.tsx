@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 const About = React.lazy(() => import("./Pages/About"));
 const Documentation = React.lazy(() => import("./Pages/Documentation"));
 const Loading = () => <p>Loading ...</p>;
+/* import Protectedroute from "./Components/Protectedroute"; //This should probaly be added as a page later */
 
 function App() {
   return (

@@ -45,10 +45,13 @@ func Router(s *ServerAdapter) {
 	r.HandleFunc("/generateadminkey", s.generateAdminAPIKey).Methods(http.MethodGet)
 
 	//Attach a subrouter to the main router for authentication paths
-	//au := r.PathPrefix("/auth").Subrouter()
+	au := r.PathPrefix("/auth").Subrouter()
+	au.Use(s.loggingMiddleware)
+	au.Use(s.corsMiddlewareCookie)
+
 	//Login logout ROUTES
-	r.HandleFunc("/signin/", s.signin).Methods(http.MethodPost)
-	r.HandleFunc("/signup/", s.signup).Methods(http.MethodPost)
+	au.HandleFunc("/signin/", s.signin).Methods(http.MethodPost)
+	au.HandleFunc("/signup/", s.signup).Methods(http.MethodPost)
 
 	sb := r.PathPrefix("/api/v0").Subrouter()
 	//Applies middleware to all subrouters

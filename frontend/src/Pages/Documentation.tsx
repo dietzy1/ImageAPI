@@ -1,6 +1,6 @@
 import React from "react";
 import { FooterNoSearch } from "../Components/Footer";
-import Loginform from "../Components/Loginform";
+import { Loginform } from "../Components/Loginform";
 import Navbar from "../Components/Navbar";
 
 function Documentation() {

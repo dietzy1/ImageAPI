@@ -85,8 +85,10 @@ func (a Application) Signup(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Signin called yepperrs")
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
+		fmt.Println("Error parsing form")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to parse the html form")
 		return
@@ -95,9 +97,12 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 		Username:     r.Form.Get("username"),
 		Passwordhash: r.Form.Get("password"),
 	}
+	fmt.Println(creds)
 	storedCreds, err := a.dbauth.Signin(ctx, creds.Username)
+	fmt.Println(storedCreds)
 
 	if a.creds.CompareHash(storedCreds.Passwordhash, creds.Passwordhash) != true {
+		fmt.Println("Password incorrect")
 		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode("Unable to signin")
 		return
@@ -110,9 +115,15 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
+		/* Name:    "session_token",
 		Value:   sessionToken,
-		Expires: time.Now().Add(time.Second * 180),
+		Expires: time.Now().Add(time.Second * 180), */
+		Name:     "session_token",
+		Value:    sessionToken,
+		Expires:  time.Now().Add(time.Second * 180),
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Path:     "/",
 	})
 }
 

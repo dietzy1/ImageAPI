@@ -5,9 +5,6 @@ import Gallery from "../Components/Gallery";
 import Text from "../Components/Text";
 import Footer from "../Components/Footer";
 import "../index.css";
-import Loginform from "../Components/Loginform";
-
-const path = "http://localhost:8000/api/v0/images/?tags=Happy&quantity=20";
 
 const image1 =
   "http://localhost:8000/fileserver/912d6c8f-f007-4fa2-9370-e0a7ccb69717.jpg";
@@ -25,16 +22,34 @@ function Home() {
   const [term, setTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const getImagesEmpty = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/v0/images/?tags=Happy&quantity=20`
+      );
+      setImages(await res.json());
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const getImages = async () => {
-    const r = await fetch(path);
-    const images = await r.json();
-    setImages(images);
-    setLoading(false);
-    console.log(images);
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/v0/images/?tags=${term}&quantity=25`
+      );
+      setImages(await res.json());
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    getImages();
+    if (term === "") {
+      getImagesEmpty();
+    } else getImages();
   }, []);
 
   return (
@@ -42,8 +57,8 @@ function Home() {
       <div className="h-screen">
         <Navbar />
         <Text />
-        <Loginform />
         <FrontGallery />
+
         <div className="container mx-auto">
           {!loading && images.length === 0 && (
             <div>
