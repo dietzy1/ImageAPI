@@ -1,13 +1,12 @@
 package api
 
 import (
-	"net/http/httptest"
 	"testing"
 )
 
-type test struct {
+/* type test struct {
 	server *httptest.Server
-}
+} */
 
 func TestAddImage(t *testing.T) {
 

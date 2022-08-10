@@ -1,9 +1,11 @@
 import ReactDOM from "react-dom";
 import { useState } from "react";
+import { UseAuth } from "./Context";
 
 export function Signupform({ open, onClose }: any) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const auth = UseAuth(); //Context hook
   if (!open) return null;
 
   return ReactDOM.createPortal(
@@ -57,7 +59,7 @@ export function Signupform({ open, onClose }: any) {
               className="w-full my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
               type="submit"
               onClick={() => {
-                registerUser(username, password);
+                auth().login(username, password);
               }}
             >
               Sign in
@@ -68,15 +70,4 @@ export function Signupform({ open, onClose }: any) {
     </div>,
     document.getElementById("portal")!
   );
-}
-
-export async function registerUser(username: string, password: string) {
-  const formData = new FormData();
-  formData.set("username", username);
-  formData.set("password", password);
-  return await fetch("http://localhost:8000/auth/signup/", {
-    method: "POST",
-    body: formData,
-    credentials: "include",
-  });
 }

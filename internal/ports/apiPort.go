@@ -7,7 +7,7 @@ import (
 
 //Potentially move the ports into the api layer
 
-//implement http server interface methods
+// implement http server interface methods
 type ApiPort interface {
 	FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request)
@@ -22,4 +22,6 @@ type AuthenticationPort interface {
 	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
 	Signup(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Signin(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	Signout(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	Refresh(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }

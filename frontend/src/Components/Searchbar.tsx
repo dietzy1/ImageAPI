@@ -1,17 +1,15 @@
 import { useState } from "react";
 
-const Searchbar = ({ searchText }: any) => {
-  const [text, setText] = useState("");
-
+const Searchbar = ({ triggerParentUpdate }: any) => {
+  const [query, setQuery] = useState("");
   const onSubmit = (e: any) => {
     e.preventDefault();
-    searchText(text);
-    console.log(text);
+    triggerParentUpdate(query);
   };
 
   return (
     <div className="rounded w-[600px] mx-auto  ">
-      <form onSubmit={onSubmit} className="">
+      <form onSubmit={onSubmit}>
         <div className="flex items-center border-b-2  py-2 bg-white rounded-xl">
           <svg
             aria-hidden="true"
@@ -29,7 +27,10 @@ const Searchbar = ({ searchText }: any) => {
             ></path>
           </svg>
           <input
-            onChange={(e) => setText(e.target.value)}
+            /*   onChange={(e) => setText(e.target.value)} */
+            /*  onChange={(e) => triggerParentUpdate(e.target.value)} */
+
+            onChange={(e) => setQuery(e.target.value)}
             className="appearance-none bg-transparent border-none w-full text-gray-500 mr-2 py-1 px-2 leading-tight focus:outline-none rounded-md"
             type="text"
             placeholder="Search Image Tag"

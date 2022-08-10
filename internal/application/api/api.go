@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//Implements the Api port methods
+// Implements the Api port methods
 type Application struct {
 	db      ports.DbPort
 	dbauth  ports.DbAuthenticationPort
@@ -23,12 +23,12 @@ type Application struct {
 	creds   core.Credentials
 }
 
-//Constructor
+// Constructor
 func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, file ports.FilePort, session ports.SessionPort) *Application {
 	return &Application{db: db, dbauth: dbauth, file: file, session: session}
 }
 
-//Implements methods on the APi port
+// Implements methods on the APi port
 func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	querytype := "uuid"
@@ -52,7 +52,7 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 	json.NewEncoder(w).Encode(image)
 }
 
-//Implements methods on the APi port
+// Implements methods on the APi port
 func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	querytype := "tags"
@@ -80,7 +80,7 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 	json.NewEncoder(w).Encode(images)
 }
 
-//Need to implement role
+// Need to implement role
 func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -96,11 +96,12 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		Filepath: "http://localhost:8000/fileserver/" + a.image.Uuid + ".jpg",
 	}
 	data, _, err := r.FormFile("data")
-	defer data.Close()
 	if err != nil {
 		_ = json.NewEncoder(w).Encode("Unable to parse file data")
 		return
 	}
+	defer data.Close()
+
 	image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -123,8 +124,8 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	w.WriteHeader(http.StatusCreated)
 }
 
-//need to implement role
-//Implements methods on the APi port
+// need to implement role
+// Implements methods on the APi port
 func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	err := a.db.DeleteImage(ctx, vars["uuid"])
@@ -137,8 +138,8 @@ func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 }
 
-//Need to implement role
-//Implements methods on the APi port
+// Need to implement role
+// Implements methods on the APi port
 func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)

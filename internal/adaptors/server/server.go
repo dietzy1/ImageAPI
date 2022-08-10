@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dietzy1/imageAPI/internal/ports"
@@ -18,24 +19,24 @@ type ServerAdapter struct {
 	authentication ports.AuthenticationPort
 }
 
-//helper function
+// helper function
 func analyzeInterface(mp ports.ApiPort) {
 	fmt.Printf("Interface type: %T\n", mp)
 	fmt.Printf("Interface value: %v\n", mp)
 	fmt.Printf("Interface is nil: %t\n", mp == nil)
 }
 
-//Constructor
+// Constructor
 func NewServerAdapter(api ports.ApiPort, authentication ports.AuthenticationPort) *ServerAdapter {
 	return &ServerAdapter{api: api, authentication: authentication}
 }
 
-//Wrapper for router object
+// Wrapper for router object
 func (s *ServerAdapter) Router() http.Handler {
 	return s.router
 }
 
-//Routering and paths
+// Routering and paths
 func Router(s *ServerAdapter) {
 	r := mux.NewRouter()
 	//subrouter
@@ -52,6 +53,8 @@ func Router(s *ServerAdapter) {
 	//Login logout ROUTES
 	au.HandleFunc("/signin/", s.signin).Methods(http.MethodPost)
 	au.HandleFunc("/signup/", s.signup).Methods(http.MethodPost)
+	au.HandleFunc("/signout/", s.signout).Methods(http.MethodPost)
+	au.HandleFunc("/refresh/", s.refresh).Methods(http.MethodPost)
 
 	sb := r.PathPrefix("/api/v0").Subrouter()
 	//Applies middleware to all subrouters
@@ -77,7 +80,7 @@ func Router(s *ServerAdapter) {
 
 	srv := &http.Server{ //&http.Server
 		Handler:      r,
-		Addr:         "localhost:8000",
+		Addr:         os.Getenv("SERVER_PORT"),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -87,35 +90,35 @@ func Router(s *ServerAdapter) {
 
 }
 
-//Entry point for http calls
+// Entry point for http calls
 func (s *ServerAdapter) findImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.api.FindImage(ctx, w, r)
 }
 
-//Entry point for http calls
+// Entry point for http calls
 func (s *ServerAdapter) findImages(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.api.FindImages(ctx, w, r)
 }
 
-//Entry point for http calls
+// Entry point for http calls
 func (s *ServerAdapter) addImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.api.AddImage(ctx, w, r)
 }
 
-//Entry point for http calls
+// Entry point for http calls
 func (s *ServerAdapter) updateImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.api.UpdateImage(ctx, w, r)
 }
 
-//Entry point for http calls
+// Entry point for http calls
 func (s *ServerAdapter) deleteImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -157,4 +160,16 @@ func (s *ServerAdapter) signin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.authentication.Signin(ctx, w, r)
+}
+
+func (s *ServerAdapter) signout(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.authentication.Signout(ctx, w, r)
+}
+
+func (s *ServerAdapter) refresh(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.authentication.Refresh(ctx, w, r)
 }

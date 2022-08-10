@@ -14,7 +14,7 @@ import (
 
 //Communicates with mongodb database via the interface DbKeyPort
 
-//Generate a new key
+// Generate a new key
 func (a Application) AddKey(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	a.creds.Key = core.GenerateAPIKey()
 
@@ -44,16 +44,21 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 		return true
 	}
 	result, ok := a.dbauth.AuthenticateKey(ctx, vars["key"])
-	if ok != true {
+	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
 		return false
 	}
 	err = a.session.Set(ctx, vars["key"], result)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
+		return false
+	}
 	return true
 }
 
-//Generates a new key on signup
+// Generates a new key on signup
 func (a Application) Signup(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Signup")
 	err := r.ParseMultipartForm(32 << 20)
@@ -99,9 +104,13 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 	}
 	fmt.Println(creds)
 	storedCreds, err := a.dbauth.Signin(ctx, creds.Username)
-	fmt.Println(storedCreds)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to authenticate user")
+		return
+	}
 
-	if a.creds.CompareHash(storedCreds.Passwordhash, creds.Passwordhash) != true {
+	if !a.creds.CompareHash(storedCreds.Passwordhash, creds.Passwordhash) {
 		fmt.Println("Password incorrect")
 		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode("Unable to signin")
@@ -127,7 +136,7 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 	})
 }
 
-func (a Application) Logout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

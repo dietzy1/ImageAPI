@@ -3,14 +3,17 @@ import { useState } from "react";
 import { Loginform } from "./Loginform";
 import { Signupform } from "./Signupform";
 import Searchbar from "./Searchbar";
+import { UseAuth } from "./Context";
 
 /* const handleLogin () => {}
 const handleLogout () => setUser(null); */
 
-function Navbar() {
-  const [user, setUser] = useState(null); //Need to declare the type of user here
+/* function Navbar({stateChanger:any}) { */
+
+const Navbar = ({ triggerParentUpdate }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
+  const auth = UseAuth(); //Context hook
 
   return (
     <div>
@@ -31,7 +34,7 @@ function Navbar() {
         </svg>
         <h1 className=" text-5xl font-bold text-greeny pr-8">Pepe-Gallery</h1>
         <div className="flex items-center justify-center pl-3">
-          <Searchbar />
+          <Searchbar triggerParentUpdate={triggerParentUpdate} />
         </div>
         <ul className="flex">
           <li className="p-6 hover:text-greeny">
@@ -52,16 +55,16 @@ function Navbar() {
             className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30"
             onClick={() => setIsOpen1(true)}
           >
-            {user ? "Logged in" : "Sign up"}
+            {auth().user ? "Logged in" : "Sign up"}
           </button>
         </div>
       </nav>
-      <div className="">
+      <div>
         <Loginform open={isOpen} onClose={() => setIsOpen(false)} />
         <Signupform open={isOpen1} onClose={() => setIsOpen1(false)} />
       </div>
     </div>
   );
-}
+};
 
 export default Navbar;

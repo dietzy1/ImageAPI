@@ -16,13 +16,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-//Implements the db port interface and dbApiKey interface
+// Implements the db port interface and dbApiKey interface
 type DbAdapter struct {
 	client      *mongo.Client
 	redisClient *redis.Client
 }
 
-//Constructor
+// Constructor
 func NewMongoAdapter() (*DbAdapter, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -46,7 +46,7 @@ func NewMongoAdapter() (*DbAdapter, error) {
 
 }
 
-//Mongodb index - b tree
+// Mongodb index - b tree
 func (a *DbAdapter) NewIndex(database string, collectionName string, field string, unique bool) {
 	mod := mongo.IndexModel{
 		Keys:    bson.M{field: 1},
@@ -63,7 +63,7 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 		return
 	}
 	fmt.Println("Created new index:", index)
-	return
+
 }
 
 func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query string) (*core.Image, error) {
@@ -143,7 +143,7 @@ func randomize(images []core.Image) *core.Image {
 	return &image
 }
 
-//Must randomize the images based on the quantity
+// Must randomize the images based on the quantity
 func randomizeArray(images []core.Image, quantity int) []core.Image {
 	if len(images) == 0 {
 		return nil

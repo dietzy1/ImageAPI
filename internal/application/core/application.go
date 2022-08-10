@@ -16,7 +16,7 @@ type Image struct {
 	Uuid     string    `json:"uuid" bson:"uuid"`
 	Tags     []string  `json:"tags" bson:"tags"`
 	Created  time.Time `json:"created" bson:"created"`
-	Filepath string    `json:"filepath" bson:"data,omitempty"`
+	Filepath string    `json:"filepath" bson:"filepath"`
 }
 
 type Credentials struct {

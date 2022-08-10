@@ -1,7 +1,6 @@
 import ReactDOM from "react-dom";
-import Navbar from "./Navbar";
 import { useState } from "react";
-
+import { UseAuth } from "./Context";
 //Need to add an x button at the upper right corner to close the modal
 //https://stackoverflow.com/questions/63721055/react-hooks-remember-me-checkbox-in-login-form-not-working
 
@@ -13,12 +12,12 @@ import { useState } from "react";
 export function Loginform({ open, onClose }: any) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const auth = UseAuth(); //Context hook
 
   if (!open) return null;
-
   return ReactDOM.createPortal(
     <div className="fixed z-10">
-      <Navbar />
+      {/*  <Navbar /> */}
       <div
         className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
         onClick={onClose}
@@ -69,7 +68,7 @@ export function Loginform({ open, onClose }: any) {
                 className="w-full my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
                 type="submit"
                 onClick={() => {
-                  loginUser(username, password);
+                  auth().login(username, password);
                 }}
               >
                 Sign in
@@ -86,27 +85,3 @@ export function Loginform({ open, onClose }: any) {
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#requests_with_credentials
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 //https://stackoverflow.com/questions/1134290/cookies-on-localhost-with-explicit-domain
-
-export async function loginUser(username: string, password: string) {
-  const formData = new FormData();
-  formData.set("username", username);
-  formData.set("password", password);
-
-  return await fetch("http://localhost:8000/auth/signin/", {
-    method: "POST",
-    body: formData,
-    credentials: "include",
-    //Important the request must come from localhost:3000 and not localhost:3000? -Quite litterally with ? aswell
-  });
-}
-
-export async function logoutUser() {
-  return fetch("http://localhost:8000/logout", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      credentials: "include",
-    },
-  });
-}
