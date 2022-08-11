@@ -39,6 +39,7 @@ func (a Application) DeleteKey(ctx context.Context, w http.ResponseWriter, r *ht
 
 func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool {
 	vars := mux.Vars(r)
+
 	_, err := a.session.Get(ctx, vars["key"])
 	if err == nil {
 		return true
@@ -49,6 +50,7 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
 		return false
 	}
+
 	err = a.session.Set(ctx, vars["key"], result)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,9 +60,33 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 	return true
 }
 
+func (a Application) ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ShowKey called")
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
+		return
+	}
+	username, err := a.session.Get(ctx, cookie.Value)
+	if err != nil || username == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to get username from session")
+		return
+	}
+	key, err := a.dbauth.GetKey(ctx, username)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to get key from database")
+		return
+	}
+	//return the key to the user
+	_ = json.NewEncoder(w).Encode(key)
+}
+
 // Generates a new key on signup
 func (a Application) Signup(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Signup")
+
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

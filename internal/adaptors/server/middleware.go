@@ -10,19 +10,19 @@ import (
 	"golang.org/x/time/rate"
 )
 
-//API key authentication middleware
+// API key authentication middleware
 func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if s.authentication.AuthenticateKey(ctx, w, r) != true {
+		if !s.authentication.AuthenticateKey(ctx, w, r) {
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
-//Logging middleware
+// Logging middleware
 func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
@@ -30,8 +30,8 @@ func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-//Should prolly disable this shit later
-//Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
+// Should prolly disable this shit later
+// Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -45,8 +45,8 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-//Should prolly disable this shit later
-//Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
+// Should prolly disable this shit later
+// Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		/* 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -75,7 +75,7 @@ type rateLimiting struct {
 	mu sync.Mutex
 }
 
-//Rate limiting middleware
+// Rate limiting middleware
 func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//key := mux.Vars(r)["key"]
@@ -83,7 +83,7 @@ func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 		rl := rateLimiting{}
 		rl.c = rl.ratelimitKey(key)
 		if !rl.c.Allow() {
-			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
+			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			log.Default().Printf("Rate limit exceeded for key %s", key)
 			return
 		}
@@ -96,7 +96,7 @@ func (rl *rateLimiting) ratelimitKey(key string) *rate.Limiter {
 	defer rl.mu.Unlock()
 	limiter, exists := cooldown[key]
 	if !exists {
-		limiter = rate.NewLimiter(1/2, 1) //Still need to configure the exact rate limit
+		limiter = rate.NewLimiter(1%2, 1) //Still need to configure the exact rate limit
 		cooldown[key] = limiter
 	}
 	return limiter

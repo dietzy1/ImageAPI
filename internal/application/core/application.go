@@ -25,7 +25,6 @@ type Credentials struct {
 	Key          string    `json:"key" bson:"key"`
 	Created      time.Time `json:"created" bson:"created"`
 	Role         int       `json:"role" bson:"role"`
-	//Session ID
 }
 
 func (i Image) Validate(image Image) error {
@@ -43,13 +42,13 @@ func (i Image) Validate(image Image) error {
 
 func (c Credentials) Validate(crreds Credentials) error {
 	if c.Username == "" {
-		return errors.New("No username")
+		return errors.New("no username")
 	}
 	if c.Passwordhash == "" {
-		return errors.New("No password")
+		return errors.New("no password")
 	}
 	if c.Key == "" {
-		return errors.New("No key")
+		return errors.New("no key")
 	}
 	return nil
 }
@@ -58,7 +57,7 @@ func (i *Image) NewUUID() string {
 	return uuid.New().String()
 }
 
-//can add a generic method for setting time
+// can add a generic method for setting time
 func (i *Image) SetTime() time.Time {
 	//i.Created = time.Now().Format(time.RFC3339)
 	return time.Now()
@@ -85,7 +84,7 @@ func ValidateKey(key string) bool {
 	return true
 }
 
-//Input r.Form.Get("Tags")
+// Input r.Form.Get("Tags")
 func Split(input string) []string {
 	input = strings.TrimSpace(input)
 	return strings.Split(input, ",")
@@ -106,9 +105,3 @@ func (c *Credentials) CompareHash(storedpassword string, password string) bool {
 	}
 	return true
 }
-
-//TODO LIST
-
-//Generate api keys -- &&endpoint
-//generate admin api key && endpoint
-//implement login system

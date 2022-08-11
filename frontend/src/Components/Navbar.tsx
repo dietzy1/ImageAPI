@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Loginform } from "./Loginform";
 import { Signupform } from "./Signupform";
 import Searchbar from "./Searchbar";
-import { UseAuth } from "./Context";
+import { UseAuth } from "../logic/Context";
 
 /* const handleLogin () => {}
 const handleLogout () => setUser(null); */
@@ -49,13 +49,13 @@ const Navbar = ({ triggerParentUpdate }: any) => {
             className="p-6 py-3 px-3 hover:text-greeny"
             onClick={() => setIsOpen(true)}
           >
-            Login
+            {auth().user ? "logged in" : "login"}
           </button>
           <button
             className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30"
             onClick={() => setIsOpen1(true)}
           >
-            {auth().user ? "Logged in" : "Sign up"}
+            {auth().user ? "Account Page" : "Sign up"}
           </button>
         </div>
       </nav>

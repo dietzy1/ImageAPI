@@ -20,6 +20,7 @@ type AuthenticationPort interface {
 	AddKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	DeleteKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
+	ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Signup(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Signin(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Signout(ctx context.Context, w http.ResponseWriter, r *http.Request)

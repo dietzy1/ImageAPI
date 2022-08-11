@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import { useState } from "react";
-import { UseAuth } from "./Context";
+import { UseAuth } from "../logic/Context";
 //Need to add an x button at the upper right corner to close the modal
 //https://stackoverflow.com/questions/63721055/react-hooks-remember-me-checkbox-in-login-form-not-working
 

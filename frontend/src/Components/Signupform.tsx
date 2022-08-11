@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import { useState } from "react";
-import { UseAuth } from "./Context";
+import { UseAuth } from "../logic/Context";
 
 export function Signupform({ open, onClose }: any) {
   const [username, setUsername] = useState("");

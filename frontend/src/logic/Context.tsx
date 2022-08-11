@@ -19,11 +19,10 @@ export const UseAuth = () => {
 };
 
 function UseProvideAuth() {
-  const [user, setUser] = useState(false); //false if not logged in -- //True if logged in
+  const [user, setUser] = useState(true); //false if not logged in -- //True if logged in
   const [errors, setErrors] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  //Should be used in LoginForm component
+  //Loginform component
   function login(username: string, password: string) {
     const formData = new FormData();
     formData.set("username", username);
@@ -42,6 +41,7 @@ function UseProvideAuth() {
     });
   }
 
+  //navbar component
   function logout() {
     return fetch("http://localhost:8000/auth/", {
       method: "POST",
@@ -54,6 +54,7 @@ function UseProvideAuth() {
     });
   }
 
+  //Registerform component
   function signup(username: string, password: string) {
     const formData = new FormData();
     formData.set("username", username);
@@ -71,6 +72,7 @@ function UseProvideAuth() {
       setUser(true);
     });
   }
+  //Home component
   function refreshSession() {
     return fetch("http://localhost:8000/auth/refresh/", {
       method: "POST",

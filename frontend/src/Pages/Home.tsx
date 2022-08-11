@@ -4,7 +4,7 @@ import FrontGallery from "../Components/FrontGallery";
 import Gallery from "../Components/Gallery";
 import Text from "../Components/Text";
 import Footer from "../Components/Footer";
-import { UseAuth } from "../Components/Context";
+import { UseAuth } from "../logic/Context";
 import "../index.css";
 
 /* const image1 =

@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { ProvideAuth } from "./Components/Context";
+import { ProvideAuth } from "./logic/Context";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
