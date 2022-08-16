@@ -63,8 +63,10 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 func (a Application) ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("ShowKey called")
 	cookie, err := r.Cookie("session_token")
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(cookie)
 		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
 		return
 	}

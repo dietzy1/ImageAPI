@@ -38,6 +38,7 @@ func (s *ServerAdapter) Router() http.Handler {
 // Routering and paths
 func Router(s *ServerAdapter) {
 	r := mux.NewRouter()
+	r.HandleFunc("/healthcheck", s.healthcheck)
 
 	//Authentication subrouter routes
 	au := r.PathPrefix("/auth").Subrouter()
@@ -63,8 +64,6 @@ func Router(s *ServerAdapter) {
 	sb.Use(s.corsMiddleware)
 	//sb.Use(s.rateLimitingMiddleware)
 	sb.Use(s.authenticateKey)
-
-	sb.HandleFunc("/healthcheck", s.healthcheck)
 
 	//POST, PUT, DELETE ROUTES
 	sb.HandleFunc("/image/", s.addImage).Methods(http.MethodPost) //form data
@@ -128,6 +127,12 @@ func (s *ServerAdapter) deleteImage(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+	if r.Method == "OPTIONS" {
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	io.WriteString(w, `{"alive": true}`)
 }

@@ -9,9 +9,18 @@ export default function Accountpage() {
   const [toggle, setToggle] = useState(false);
   const [state, dispatch] = useGlobalState();
 
+  const triggerToggle = () => {
+    setToggle(!toggle);
+    console.log(toggle);
+    FetchAPIKey({ setAPIKey });
+  };
+
+  /*  if (!state.user) {
+    window.location.href = "/";
+  } */
   return (
     <div>
-      {/*       <Navbar /> */}
+      <Navbar />
       <div className="flex flex-col justify-center mt-44">
         <div className="max-w-[650px] h-[650px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
           <p className="flex justify-end text-white text-bold text-xl">x</p>
@@ -28,11 +37,16 @@ export default function Accountpage() {
           <div className="flex flex-col text-gray-400 py-2">
             <button
               className="my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
-              onClick={() => FetchAPIKey({ setAPIKey })}
+              /* onClick={() => FetchAPIKey({ setAPIKey })} */
+              onClick={triggerToggle}
             >
               Show API key
             </button>
-            <span>filler text</span>
+            API-key
+            <div className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none">
+              {toggle ? apiKey : "****************"}
+            </div>
+            <span>Feel free</span>
             <span>filler text</span>
             <span>filler text</span>
             <span>filler text</span>
@@ -43,10 +57,6 @@ export default function Accountpage() {
             >
               Generate API-key
             </button>
-            API-key
-            <div className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none">
-              {toggle ? apiKey : "****************"}
-            </div>
           </div>
         </div>
       </div>
@@ -56,26 +66,18 @@ export default function Accountpage() {
 }
 
 //Function that fetches a new api key
-function FetchAPIKey({ setAPIKey }: any) {
-  return fetch("http://localhost:8000/auth/showkey/", {
+async function FetchAPIKey({ setAPIKey }: any) {
+  const res = await fetch("http://localhost:8000/auth/showkey/", {
     method: "GET",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((response) => {
-    setAPIKey(response.json());
   });
+  setAPIKey(await res.json());
 }
 
-function GenerateAPIKey({ setAPIKey }: any) {
-  return fetch("http://localhost:8000/auth/generatekey/", {
+async function GenerateAPIKey({ setAPIKey }: any) {
+  const res = await fetch("http://localhost:8000/auth/generatekey/", {
     method: "POST",
     credentials: "include",
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error("Failed to logout");
-    }
-    setAPIKey(response.json());
   });
+  setAPIKey(res.json());
 }

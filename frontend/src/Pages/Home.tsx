@@ -33,6 +33,7 @@ function Home() {
   };
 
   useEffect(() => {
+    onsubmit();
     if (query === "") {
       getImagesEmpty();
     } else getImages(query);
@@ -64,22 +65,17 @@ function Home() {
     }
   };
 
-  /*   onsubmit = async (e: any) => {
-    e.preventDefault();
+  async function onsubmit() {
     const ok = await refreshSessionfunc();
-    console.log(state.user);
     if (ok) {
       dispatch({ user: true });
-    }
-  }; */
-
-  /*  window.onbeforeunload = async (e) => {
-      const ok = await refreshSessionfunc();
       console.log(state.user);
-      if (ok) {
-        dispatch({ user: true });
-      }
-    }; */
+    }
+    if (!ok) {
+      dispatch({ user: false });
+      console.log(state.user);
+    }
+  }
 
   return (
     <div>

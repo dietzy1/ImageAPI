@@ -1,22 +1,43 @@
 import Footer from "../Components/Footer";
 import Navbar from "../Components/Navbar";
+import Sidebar from "../Components/Sidebar";
 
 function Documentation() {
+  //mt is 44max-w-[650px]
   return (
-    <div className="h-screen">
+    <div>
       <Navbar />
-      <div className="text-white text-center pt-[96px] mt-20">
-        {/*   <Navbar /> */}
-        <h1>Welcome to the API documentation.</h1>
-        <div className="bg-gray-400 ml-40 mr-40 h-screen rounded-3xl text-xl">
-          <div>Primary api route is localhost:8000/api/v0/</div>
-          <div>Request a single Image: localhost:8000/api/v0/image/</div>
-          <div>Request multiple images: localhost:8000/api/v0/images/</div>
+      <Sidebar />
 
-          <span></span>
+      <div className="flex flex-col justify-center mt-14">
+        <div className="max-w-[600px] h-[650px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
+          <p className="flex justify-end text-white text-bold text-xl">x</p>
+          <h2 className="text-4xl font-bold text-white text-center">
+            Documentation
+          </h2>
+
+          <div className="flex flex-col text-gray-400 py-2">
+            User Name
+            <span>Feel free</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <div className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none">
+              "output the fcking username here"
+            </div>
+          </div>
+          <div className="flex flex-col text-gray-400 py-2">
+            API-key
+            <span>Feel free</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <span>filler text</span>
+          </div>
         </div>
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }

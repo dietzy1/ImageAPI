@@ -1,4 +1,20 @@
+import { useState, useEffect } from "react";
+
 function Footer() {
+  const [healthcheck, setHealthcheck] = useState(false);
+
+  const healthcheckfunc = async () => {
+    const res = await fetch("http://localhost:8000/healthcheck");
+    if (!res.ok) {
+      setHealthcheck(true);
+      console.log(healthcheck);
+    }
+  };
+
+  useEffect(() => {
+    healthcheckfunc();
+  }, []);
+
   return (
     <footer className="shadow px-6 fixed bottom-0 w-screen bg-blacky pt-3 mt-20 ">
       <div>
@@ -19,6 +35,14 @@ function Footer() {
               />
             </svg>
             Pepe-API
+          </div>
+          <div className="flex flex-row relative">
+            API-Status
+            {healthcheck ? (
+              <div className="rounded-full flex p-1 w-1 h-1 bg-red-800 bot-16 left-16" />
+            ) : (
+              <div className="rounded-full flex p-1 w-1 h-1 bg-greeny bot-16 left-16" />
+            )}
           </div>
         </div>
       </div>
