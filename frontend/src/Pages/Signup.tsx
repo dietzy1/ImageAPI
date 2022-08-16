@@ -1,34 +1,42 @@
-import ReactDOM from "react-dom";
-import { useState } from "react";
-import { UseAuth } from "../logic/Context";
+import React from "react";
+import { Link } from "react-router-dom";
+import Footer from "../Components/Footer";
+import Navbar from "../Components/Navbar";
+import { Signupfunc } from "../logic/fetch";
+import { useGlobalState } from "../logic/context";
 
-export function Signupform({ open, onClose }: any) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const auth = UseAuth(); //Context hook
-  if (!open) return null;
+function Signup() {
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [state, dispatch] = useGlobalState();
 
-  return ReactDOM.createPortal(
-    <div
-      className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
-      onClick={onClose}
-    >
-      <div
-        className=" z-[1]"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        <div className="flex flex-col justify-center ">
+  const onsubmit = (e: any) => {
+    e.preventDefault();
+    Signupfunc(username, password);
+    dispatch({ bool: true });
+  };
+
+  const onsubmitfunc = async (e: any) => {
+    e.preventDefault();
+    console.log("Logging in");
+    const ok = await Signupfunc(username, password);
+    if (ok) {
+      dispatch({ user: true });
+      console.log(state.user);
+    }
+  };
+
+  return (
+    <div>
+      <div>
+        {/*     <Navbar /> */}
+        <div className="flex flex-col justify-center mt-44">
           <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
-            <p
-              onClick={onClose}
-              className="flex justify-end text-white text-bold text-xl"
-            >
-              x
-            </p>
+            <li className="flex justify-end text-white text-bold text-xl">
+              <Link to="/"> X </Link>
+            </li>
             <h2 className="text-4xl font-bold text-white text-center">
-              Sign up
+              Sign up!
             </h2>
             <div className="flex flex-col text-gray-400 py-2">
               <label className="text-start" htmlFor="username">
@@ -50,24 +58,20 @@ export function Signupform({ open, onClose }: any) {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            {/*   <div className=" text-gray-400 py-2">
-              <p className="flex items-center">
-                <input className="mr-2" type="checkbox" /> Remember Me
-              </p>
-            </div> */}
+
             <button
               className="w-full my-5 py-2 bg-greeny shadow-lg shadow-greeny/50 hover:shadow-greeny/30 text-white font-semibold rounded-lg"
               type="submit"
-              onClick={() => {
-                auth().login(username, password);
-              }}
+              onClick={onsubmitfunc}
             >
-              Sign in
+              Sign up
             </button>
           </form>
         </div>
+        <Footer />
       </div>
-    </div>,
-    document.getElementById("portal")!
+    </div>
   );
 }
+
+export default Signup;

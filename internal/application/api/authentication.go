@@ -160,6 +160,8 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 		Secure:   true,
 		Path:     "/",
 	})
+	fmt.Println("Signin successful")
+	fmt.Println("Session token: ", sessionToken)
 }
 
 func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -169,6 +171,7 @@ func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http
 		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
 		return
 	}
+	fmt.Println(cookie.Value)
 	err = a.session.Delete(ctx, cookie.Value)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -176,10 +179,15 @@ func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:   "session_token",
-		Value:  "",
-		MaxAge: -1,
+		Name:     "session_token",
+		Value:    "",
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Path:     "/",
+		MaxAge:   -1,
 	})
+
+	fmt.Println("Signout successful")
 }
 
 func (a Application) ProtectPath(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -231,4 +239,13 @@ func (a Application) Refresh(ctx context.Context, w http.ResponseWriter, r *http
 		_ = json.NewEncoder(w).Encode("Unable to update session cookie")
 		return
 	}
+	//Update the cookie deletion time
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    cookie.Value,
+		Expires:  time.Now().Add(time.Second * 180),
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Path:     "/",
+	})
 }

@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Loginform } from "./Loginform";
-function Text() {
-  const [isOpen, setIsOpen] = useState(false);
+import { Link } from "react-router-dom";
 
+function Text() {
   return (
     <div className="text-white text-center">
       <div className="max-w-[800px]  w-full h-fit mx-auto text-center flex-col justify-center pt-[96px] mt-20 mb-16">
@@ -12,15 +10,11 @@ function Text() {
         <h1 className="text-2xl font-bold text-gray-500">
           Gain access to an API of hundreds of sorted, high quality images
         </h1>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-greeny w-[200px] rounded-md font-medium my-6 mx-auto py-3 text-black hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30"
-        >
-          Get started
-        </button>
-      </div>
-      <div>
-        <Loginform open={isOpen} onClose={() => setIsOpen(false)} />
+        <ul>
+          <li className="bg-greeny w-[200px] rounded-md font-medium my-6 mx-auto py-3 text-black hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30">
+            <Link to="/login"> Get started</Link>
+          </li>
+        </ul>
       </div>
     </div>
   );

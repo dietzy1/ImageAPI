@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -20,11 +19,11 @@ type ServerAdapter struct {
 }
 
 // helper function
-func analyzeInterface(mp ports.ApiPort) {
+/* func analyzeInterface(mp ports.ApiPort) {
 	fmt.Printf("Interface type: %T\n", mp)
 	fmt.Printf("Interface value: %v\n", mp)
 	fmt.Printf("Interface is nil: %t\n", mp == nil)
-}
+} */
 
 // Constructor
 func NewServerAdapter(api ports.ApiPort, authentication ports.AuthenticationPort) *ServerAdapter {

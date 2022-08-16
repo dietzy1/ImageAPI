@@ -4,7 +4,9 @@ import FrontGallery from "../Components/FrontGallery";
 import Gallery from "../Components/Gallery";
 import Text from "../Components/Text";
 import Footer from "../Components/Footer";
-import { UseAuth } from "../logic/Context";
+import { refreshSessionfunc } from "../logic/fetch";
+import { useGlobalState } from "../logic/context";
+
 import "../index.css";
 
 /* const image1 =
@@ -22,18 +24,25 @@ function Home() {
   const [images, setImages] = useState<imageType[]>({} as imageType[]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const auth = UseAuth(); //Context hook
+  const [state, dispatch] = useGlobalState();
 
   const updateQueryState = (state: any) => {
+    console.log("updateQueryState");
     setQuery(state);
     console.log(query);
   };
+
+  useEffect(() => {
+    if (query === "") {
+      getImagesEmpty();
+    } else getImages(query);
+  }, [query]);
 
   //Hardcoded images to display something to gallery by default
   const getImagesEmpty = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v0/images/?tags=Happy&quantity=20`
+        `http://localhost:8000/api/v0/images/?tags=Happy&quantity=20&key=${process.env.REACT_APP_API_KEY}`
       );
       setImages(await res.json());
       setLoading(false);
@@ -46,7 +55,7 @@ function Home() {
   const getImages = async (query: string) => {
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v0/images/?tags=${query}&quantity=25`
+        `http://localhost:8000/api/v0/images/?tags=${query}&quantity=25&key=${process.env.REACT_APP_API_KEY}`
       );
       setImages(await res.json());
       setLoading(false);
@@ -55,16 +64,27 @@ function Home() {
     }
   };
 
-  useEffect(() => {
-    if (query === "") {
-      getImagesEmpty();
-    } else getImages(query);
-  }, [query]);
+  /*   onsubmit = async (e: any) => {
+    e.preventDefault();
+    const ok = await refreshSessionfunc();
+    console.log(state.user);
+    if (ok) {
+      dispatch({ user: true });
+    }
+  }; */
+
+  /*  window.onbeforeunload = async (e) => {
+      const ok = await refreshSessionfunc();
+      console.log(state.user);
+      if (ok) {
+        dispatch({ user: true });
+      }
+    }; */
 
   return (
     <div>
       <div className="h-screen">
-        <Navbar user={auth().user} triggerParentUpdate={updateQueryState} />
+        <Navbar triggerParentUpdate={updateQueryState} />
 
         <Text />
         <FrontGallery />

@@ -34,16 +34,13 @@ func NewMongoAdapter() (*DbAdapter, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	a := &DbAdapter{client: client}
 	//Hard coded index
 	/* 	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
 	   	a.NewIndex("Image-Database", "images", "uuid", false)
 	   	a.NewIndex("Credential-Database", "credentials", "key", false)
 	   	a.NewIndex("Credential-Database", "credentials", "username", false) */
-
 	return a, nil
-
 }
 
 // Mongodb index - b tree

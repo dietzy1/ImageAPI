@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -40,7 +41,6 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 		if r.Method == "OPTIONS" {
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -55,11 +55,12 @@ func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 		if r.Method == "OPTIONS" {
 			return
 		} */
+		fmt.Println(r.Header.Get("Origin"))
 		//w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		w.Header().Set("Access-Control-Allow-Origin", "localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if r.Method == "OPTIONS" {
 			return

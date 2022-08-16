@@ -1,19 +1,20 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import { Loginform } from "./Loginform";
-import { Signupform } from "./Signupform";
 import Searchbar from "./Searchbar";
-import { UseAuth } from "../logic/Context";
-
-/* const handleLogin () => {}
-const handleLogout () => setUser(null); */
-
-/* function Navbar({stateChanger:any}) { */
+import { Logoutfunc } from "../logic/fetch";
+import { useGlobalState } from "../logic/context";
 
 const Navbar = ({ triggerParentUpdate }: any) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isOpen1, setIsOpen1] = useState(false);
-  const auth = UseAuth(); //Context hook
+  const [state, dispatch] = useGlobalState();
+
+  const onsubmitfunc = async (e: any) => {
+    e.preventDefault();
+    console.log("Logging out yep");
+    const ok = await Logoutfunc();
+    if (ok) {
+      dispatch({ user: false });
+      console.log(state.user);
+    }
+  };
 
   return (
     <div>
@@ -32,7 +33,9 @@ const Navbar = ({ triggerParentUpdate }: any) => {
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        <h1 className=" text-5xl font-bold text-greeny pr-8">Pepe-Gallery</h1>
+        <h1 className=" text-5xl font-bold text-greeny pr-8 whitespace-nowrap">
+          Pepe-Gallery
+        </h1>
         <div className="flex items-center justify-center pl-3">
           <Searchbar triggerParentUpdate={triggerParentUpdate} />
         </div>
@@ -45,24 +48,35 @@ const Navbar = ({ triggerParentUpdate }: any) => {
           </li>
         </ul>
         <div className="flex items-center space-x-3">
-          <button
-            className="p-6 py-3 px-3 hover:text-greeny"
-            onClick={() => setIsOpen(true)}
-          >
-            {auth().user ? "logged in" : "login"}
-          </button>
-          <button
-            className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30"
-            onClick={() => setIsOpen1(true)}
-          >
-            {auth().user ? "Account Page" : "Sign up"}
-          </button>
+          {state.user ? (
+            <button
+              className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20"
+              onClick={onsubmitfunc}
+            >
+              Logout
+            </button>
+          ) : (
+            <ul>
+              <li className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20">
+                <Link to="/login"> Login</Link>
+              </li>
+            </ul>
+          )}
+          {state.user ? (
+            <ul>
+              <li className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20">
+                <Link to="/account"> Account</Link>
+              </li>
+            </ul>
+          ) : (
+            <ul>
+              <li className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20">
+                <Link to="/signup"> Signup</Link>
+              </li>
+            </ul>
+          )}
         </div>
       </nav>
-      <div>
-        <Loginform open={isOpen} onClose={() => setIsOpen(false)} />
-        <Signupform open={isOpen1} onClose={() => setIsOpen1(false)} />
-      </div>
     </div>
   );
 };
