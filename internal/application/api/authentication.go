@@ -39,19 +39,29 @@ func (a Application) DeleteKey(ctx context.Context, w http.ResponseWriter, r *ht
 
 func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool {
 	vars := mux.Vars(r)
+	key := vars["key"]
+	if vars["key"] == "" {
+		err := r.ParseMultipartForm(32 << 20)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode("Unable to parse the html form")
+			return false
+		}
+		key = r.Form.Get("key")
+	}
 
-	_, err := a.session.Get(ctx, vars["key"])
+	_, err := a.session.Get(ctx, key)
 	if err == nil {
 		return true
 	}
-	result, ok := a.dbauth.AuthenticateKey(ctx, vars["key"])
+	result, ok := a.dbauth.AuthenticateKey(ctx, key)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
 		return false
 	}
 
-	err = a.session.Set(ctx, vars["key"], result)
+	err = a.session.Set(ctx, key, result)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to authenticate key")

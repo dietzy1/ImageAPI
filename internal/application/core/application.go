@@ -4,8 +4,16 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"image"
+	_ "image/gif"
+	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
 	"strings"
 	"time"
+
+	_ "golang.org/x/image/webp"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -32,7 +40,7 @@ func (i Image) Validate(image Image) error {
 		fmt.Println("returning")
 		return errors.New("")
 	}
-	if len(i.Tags) < 0 {
+	if len(i.Tags) == 0 {
 		fmt.Println("returning tags")
 		return errors.New("")
 	}
@@ -100,8 +108,13 @@ func (c *Credentials) Hash(password string) string {
 
 func (c *Credentials) CompareHash(storedpassword string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(password))
+	return err == nil
+}
+
+func ConvertToJPEG(w io.Writer, r io.Reader) error {
+	img, _, err := image.Decode(r)
 	if err != nil {
-		return false
+		return err
 	}
-	return true
+	return jpeg.Encode(w, img, &jpeg.Options{Quality: 95})
 }

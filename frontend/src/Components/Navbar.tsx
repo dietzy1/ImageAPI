@@ -15,10 +15,11 @@ const Navbar = ({ triggerParentUpdate }: any) => {
       console.log(state.user);
     }
   };
-
+  //bg-blacky/30
+  //bg-[#23242A]/10
   return (
     <div>
-      <nav className="text-white flex justify-center items-center h-16 w-full px-[6rem] fixed top-0 backdrop-blur-lg backdrop-grayscale backdrop-opacity-[99] backdrop-sepia bg-blacky/30 z-[999]  ">
+      <nav className="text-white flex justify-center items-center h-16 w-full px-[6rem] fixed top-0 backdrop-blur-[46px]  bg-darky/10 z-[999]  ">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-[5rem] w-[5rem]"

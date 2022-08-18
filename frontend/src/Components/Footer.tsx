@@ -16,7 +16,7 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="shadow px-6 fixed bottom-0 w-screen bg-blacky pt-3 mt-20 ">
+    <footer className="shadow px-6 fixed bottom-0 w-screen bg-darky pt-3 mt-20 ">
       <div>
         <div className="text-1xl font-bold whitespace-nowrap text-white flex items-center justify-between pl-14 pr-14">
           <div className=" flex items-center">

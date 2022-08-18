@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         blacky: "#000300",
         greeny: "#00df9a",
+        darky: "#131315",
       },
       animation: {
         slide: "slide 36s linear infinite",

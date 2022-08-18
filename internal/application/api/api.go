@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,7 +45,7 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	image.Filepath = "http://localhost:8000/fileserver/" + image.Uuid + ".jpg"
+
 	w.Header().Set("Content-Type", "application/json")
 	if image == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -69,10 +71,11 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	for i := 0; i < len(images); i++ {
+	w.Header().Set("Content-Type", "application/json")
+	/* for i := 0; i < len(images); i++ {
 		images[i].Filepath = "http://localhost:8000/fileserver/" + images[i].Uuid + ".jpg"
 		w.Header().Set("Content-Type", "application/json")
-	}
+	} */
 	if images == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -88,12 +91,12 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		_ = json.NewEncoder(w).Encode("Unable to add image while parsing")
 		return
 	}
+
 	image := core.Image{
-		Name:     r.Form.Get("Name"),
-		Uuid:     a.image.NewUUID(),
-		Tags:     core.Split(r.Form.Get("Tags")),
-		Created:  a.image.SetTime(),
-		Filepath: "http://localhost:8000/fileserver/" + a.image.Uuid + ".jpg",
+		Name:    r.Form.Get("Name"),
+		Uuid:    a.image.NewUUID(),
+		Tags:    core.Split(r.Form.Get("Tags")),
+		Created: a.image.SetTime(),
 	}
 	data, _, err := r.FormFile("data")
 	if err != nil {
@@ -102,23 +105,34 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 	defer data.Close()
 
+	buf := new(bytes.Buffer)
+	err = core.ConvertToJPEG(buf, data)
+	if err != nil {
+		_ = json.NewEncoder(w).Encode("Unable to convert file to jpg")
+		fmt.Println(err)
+		return
+	}
 	image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Missing name or tag")
 		return
 	}
-	err = a.db.StoreImage(ctx, &image)
+
+	url, err := a.file.UploadFile(ctx, image, buf)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
+		_ = json.NewEncoder(w).Encode("Unable to upload file")
+		fmt.Println(err)
 		return
 	}
-	err = a.file.AddFile(ctx, image.Uuid, data)
+	image.Filepath = url
+
+	err = a.db.StoreImage(ctx, &image)
 	if err != nil {
+		//Call to delete file
+		a.file.DeleteFile(ctx, image)
 		w.WriteHeader(http.StatusBadRequest)
-		a.db.DeleteImage(ctx, a.image.Uuid)
-		_ = json.NewEncoder(w).Encode("some other error")
+		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -156,6 +170,13 @@ func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to update image")
 		return
+	}
+	err = a.file.UpdateFile(ctx, a.image)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Unable to update image")
+		return
+
 	}
 	w.WriteHeader(http.StatusOK)
 }

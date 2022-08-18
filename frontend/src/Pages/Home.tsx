@@ -86,7 +86,6 @@ function Home() {
         <FrontGallery />
 
         <div className="">
-          {"container mx-auto"}
           {!loading && images.length === 0 && (
             <div>
               <h1 className="text-5xl text-center mx-auto mt-32">

@@ -32,8 +32,11 @@ func main() {
 		fmt.Println(err)
 	}
 
-	filedb := filerepository.NewFileAdapter()
+	filedb, err := filerepository.NewImageKitClientAdapter()
 	fmt.Println("File adapter initialized: ", filedb)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	//Application //internal/application/api
 	applicationAPI := api.NewApplication(mongodb, mongodb, filedb, redisdb)

@@ -9,32 +9,58 @@ function Documentation() {
       <Navbar />
       <Sidebar />
 
-      <div className="flex flex-col justify-center mt-14">
-        <div className="max-w-[600px] h-[650px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
-          <p className="flex justify-end text-white text-bold text-xl">x</p>
-          <h2 className="text-4xl font-bold text-white text-center">
-            Documentation
+      <div className="flex flex-col justify-center mt-24 ">
+        <div className="max-w-[850px] w-full mx-auto p-8 px-8 ">
+          <h2 className="text-4xl font-bold text-white text-center mb-8">
+            API-Documentation
           </h2>
-
+          <h2 className="text-4xl font-bold text-white underline">
+            Getting started
+          </h2>
           <div className="flex flex-col text-gray-400 py-2">
-            User Name
+            <span className="mb-4">
+              To access the API, please create an developer account first.
+            </span>
+            <span className="mb-4">
+              Once you have been successfully registered as a user, go ahead and
+              click the account button at the top right which leads to the
+              account page.
+            </span>
+            <span>
+              At the account page you are able to see the custom generated
+              API-key for your account. This key is required to access the API.
+              Incase your key has been compromised, you can generate a new one
+              at any time, however only one key can be active at a time.
+            </span>
+            <span className="mb-4">
+              The API is currently in beta and is subject to change.
+            </span>
+          </div>
+          <h2 className="text-4xl font-bold text-white underline">
+            Data model
+          </h2>
+          <div className="flex flex-col text-gray-400 py-2">
+            <span>{model}</span>
+            <span>filler text</span>
+            <span>filler text</span>
+            <span>filler text</span>
+          </div>
+          <h2 className="text-4xl font-bold text-white underline">API-Key</h2>
+          <div className="flex flex-col text-gray-400 py-2">
             <span>Feel free</span>
             <span>filler text</span>
             <span>filler text</span>
             <span>filler text</span>
             <span>filler text</span>
-            <div className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-greeny focus:bg-gray-800 focus:outline-none">
-              "output the fcking username here"
-            </div>
           </div>
+          <h2 className="text-4xl font-bold text-white underline">Endpoints</h2>
           <div className="flex flex-col text-gray-400 py-2">
-            API-key
-            <span>Feel free</span>
-            <span>filler text</span>
-            <span>filler text</span>
-            <span>filler text</span>
-            <span>filler text</span>
+            <span>localhost:8000/api/v0/</span>
+            <span>localhost:8000/auth/</span>
+            <span>localhost:8000/api/v0/image/</span>
+            <span>{endpoint}</span>
           </div>
+          <div className="mt-24" />
         </div>
       </div>
       <Footer />
@@ -44,4 +70,12 @@ function Documentation() {
 
 export default Documentation;
 
-//Add a indholdsfortegnelse so more content is accesible
+const endpoint = "localhost:8000/api/v0/images/{tags}/{quantity}";
+const endpoint1 = "localhost:8000/api/v0/images/{}/{quantity}";
+const model = `export type imageType = {
+  name: string;
+  uuid: string;
+  tags: Array<string>;
+  created: string;
+  filepath: string;
+};`;
