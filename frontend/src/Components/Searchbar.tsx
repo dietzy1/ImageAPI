@@ -27,9 +27,6 @@ const Searchbar = ({ triggerParentUpdate }: any) => {
             ></path>
           </svg>
           <input
-            /*   onChange={(e) => setText(e.target.value)} */
-            /*  onChange={(e) => triggerParentUpdate(e.target.value)} */
-
             onChange={(e) => setQuery(e.target.value)}
             className="appearance-none bg-transparent border-none w-full text-gray-500 mr-2 py-1 px-2 leading-tight focus:outline-none rounded-md"
             type="text"

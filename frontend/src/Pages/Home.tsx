@@ -50,6 +50,7 @@ function Home() {
     } catch (error) {
       console.log(error);
     }
+    console.log(images);
   };
 
   //Fetches images from the server
@@ -81,11 +82,10 @@ function Home() {
     <div>
       <div className="h-screen">
         <Navbar triggerParentUpdate={updateQueryState} />
-
         <Text />
         <FrontGallery />
 
-        <div className="">
+        <div>
           {!loading && images.length === 0 && (
             <div>
               <h1 className="text-5xl text-center mx-auto mt-32">
@@ -107,10 +107,23 @@ function Home() {
               </div>
             </div>
           ) : (
-            <div className="columns-5 p-20">
-              {images.map((image) => (
-                <Gallery key={image.uuid} image={image} />
-              ))}
+            <div>
+              <div className="text-white text-3xl text-center">
+                Use the search bar to find your favorite pepe!
+              </div>
+              <div className="text-greeny text-center text-xl">
+                Found {images.length} pepes for the tag "{query}" sorted
+                randomly
+              </div>
+              <div className="mt-3 justify-center flex items-center">
+                <hr className="mt-3 sm:mx-auto w-[38rem]" />
+              </div>
+
+              <div className="columns-5 pt-10 px-24">
+                {images.map((image) => (
+                  <Gallery key={image.uuid} image={image} />
+                ))}
+              </div>
             </div>
           )}
         </div>

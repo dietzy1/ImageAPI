@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Footer from "../Components/Footer";
 import Navbar from "../Components/Navbar";
 import { useGlobalState } from "../logic/context";
+import { createPortal } from "react-dom";
 
 //List of shit that needs to be correct
 //Must be of this format
@@ -11,7 +12,7 @@ import { useGlobalState } from "../logic/context";
 
 //And the onsubmit must be of const onsubmitfunc = async (e: any) => {
 
-function Loginpage() {
+export function Loginpage({ open, onClose }: any) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [state, dispatch] = useGlobalState();
@@ -26,15 +27,25 @@ function Loginpage() {
     }
   };
 
-  //The navbar component is picking up the onsubmit function
-  return (
-    <div>
-      <Navbar />
-      <div className="flex flex-col justify-center mt-44">
-        <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
-          <li className="flex justify-end text-white text-bold text-xl">
-            <Link to="/"> X </Link>
-          </li>
+  if (!open) return null;
+  return createPortal(
+    <div
+      className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
+      onClick={onClose}
+    >
+      <div
+        className="flex flex-col justify-center  "
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8  rounded-lg">
+          <p
+            onClick={onClose}
+            className="flex justify-end text-white text-bold text-xl"
+          >
+            x
+          </p>
           <h2 className="text-4xl font-bold text-white text-center">Login</h2>
           <div className="flex flex-col text-gray-400 py-2">
             <label className="text-start" htmlFor="username">
@@ -70,32 +81,7 @@ function Loginpage() {
           </button>
         </form>
       </div>
-      <Footer />
-    </div>
+    </div>,
+    document.getElementById("portal")!
   );
 }
-
-export default Loginpage;
-
-/* 
-function Login(username: string, password: string) {
-  console.log("login called client side");
-  const formData = new FormData();
-  formData.set("username", username);
-  formData.set("password", password);
-  globalUser.user = true;
-  fetch("http://localhost:8000/auth/signin/", {
-    method: "POST",
-    body: formData,
-    credentials: "include",
-    //Important the request must come from localhost:3000 and not localhost:3000? -Quite litterally with ? aswell
-  }).then((response) => {
-    console.log(response);
-    if (!response.ok) {
-      console.log("failed to login");
-      return null;
-    }
-    console.log("set user to true");
-    globalUser.user = true;
-  });
-} */

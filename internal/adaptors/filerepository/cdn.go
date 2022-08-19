@@ -37,7 +37,7 @@ func NewImageKitClientAdapter() (*FileAdapter, error) {
 func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *bytes.Buffer) (string, error) {
 	tags := strings.Join(image.Tags, ",")
 	tags = strings.TrimSpace(tags)
-	fmt.Println("UploadFile called")
+
 	params := uploader.UploadParam{
 		FileName:          image.Uuid + ".jpg",
 		UseUniqueFileName: newFalse(),

@@ -2,9 +2,16 @@ import { Link } from "react-router-dom";
 import Searchbar from "./Searchbar";
 import { Logoutfunc } from "../logic/fetch";
 import { useGlobalState } from "../logic/context";
+import { useState } from "react";
+import { Loginpage } from "../Pages/Loginpage";
+import { Signuppage } from "../Pages/Signuppage";
+import { Accountpage } from "../Pages/Accountpage";
 
 const Navbar = ({ triggerParentUpdate }: any) => {
   const [state, dispatch] = useGlobalState();
+  const [isOpen, setIsOpen] = useState(false); //Login
+  const [isOpen1, setIsOpen1] = useState(false); //Signup
+  const [isOpen2, setIsOpen2] = useState(false); //Account
 
   const onsubmitfunc = async (e: any) => {
     e.preventDefault();
@@ -58,28 +65,75 @@ const Navbar = ({ triggerParentUpdate }: any) => {
             </button>
           ) : (
             <ul>
-              <li className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20">
+              {/*  <li className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20">
                 <Link to="/login"> Login</Link>
-              </li>
+              </li> */}
+
+              <button
+                className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20"
+                onClick={() => openLoginpage(setIsOpen, setIsOpen1, setIsOpen2)}
+              >
+                Login
+              </button>
             </ul>
+
+            /*   <div
+              className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20 text-white"
+              onClick={() => setIsOpen(true)}
+            ></div> */
           )}
           {state.user ? (
             <ul>
-              <li className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20">
-                <Link to="/account"> Account</Link>
-              </li>
+              <button
+                onClick={() =>
+                  openAccountpage(setIsOpen, setIsOpen1, setIsOpen2)
+                }
+                className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20"
+              >
+                Account
+              </button>
             </ul>
           ) : (
             <ul>
-              <li className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20">
-                <Link to="/signup"> Signup</Link>
-              </li>
+              <button
+                onClick={() =>
+                  openSignuppage(setIsOpen, setIsOpen1, setIsOpen2)
+                }
+                className="p-6 py-3 px-3 bg-greeny rounded-xl hover:text-greeny hover:bg-white shadow-lg shadow-greeny/50 hover:shadow-greeny/30 whitespace-nowrap w-20"
+              >
+                Sign up
+              </button>
             </ul>
           )}
         </div>
       </nav>
+      <Loginpage open={isOpen} onClose={() => setIsOpen(false)} />
+      <Signuppage open={isOpen1} onClose={() => setIsOpen1(false)} />
+      <Accountpage open={isOpen2} onClose={() => setIsOpen2(false)} />
     </div>
   );
 };
 
 export default Navbar;
+
+export function openLoginpage(
+  setIsOpen: any,
+  setIsOpen1: any,
+  setIsOpen2: any
+) {
+  setIsOpen(true);
+  setIsOpen1(false);
+  setIsOpen2(false);
+}
+
+function openSignuppage(setIsOpen: any, setIsOpen1: any, setIsOpen2: any) {
+  setIsOpen(false);
+  setIsOpen1(true);
+  setIsOpen2(false);
+}
+
+function openAccountpage(setIsOpen: any, setIsOpen1: any, setIsOpen2: any) {
+  setIsOpen(false);
+  setIsOpen1(false);
+  setIsOpen2(true);
+}

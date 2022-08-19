@@ -72,10 +72,10 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	/* for i := 0; i < len(images); i++ {
+	for i := 0; i < len(images); i++ {
 		images[i].Filepath = "http://localhost:8000/fileserver/" + images[i].Uuid + ".jpg"
 		w.Header().Set("Content-Type", "application/json")
-	} */
+	}
 	if images == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return

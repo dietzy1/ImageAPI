@@ -1,10 +1,31 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import Footer from "../Components/Footer";
 import Navbar from "../Components/Navbar";
 import { useGlobalState } from "../logic/context";
 
-export default function Accountpage() {
+/* if (!open) return null;
+return createPortal(
+  <div
+    className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
+    onClick={onClose}
+  >
+    <div
+      className="flex flex-col justify-center  "
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <form className="max-w-[450px] w-full mx-auto bg-gray-900 p-8  rounded-lg">
+        <p
+          onClick={onClose}
+          className="flex justify-end text-white text-bold text-xl"
+        >
+          x
+        </p> */
+//I need to apply different z values
+export function Accountpage({ open, onClose }: any) {
   const [apiKey, setAPIKey] = useState("");
   const [toggle, setToggle] = useState(false);
   const [state, dispatch] = useGlobalState();
@@ -15,15 +36,25 @@ export default function Accountpage() {
     FetchAPIKey({ setAPIKey });
   };
 
-  /*  if (!state.user) {
-    window.location.href = "/";
-  } */
-  return (
-    <div>
-      <Navbar />
-      <div className="flex flex-col justify-center mt-44">
+  if (!open) return null;
+  return createPortal(
+    <div
+      className="top-0 bottom-0 right-0 left-0 fixed z-[1] backdrop-blur-lg shadow-3xl p-60"
+      onClick={onClose}
+    >
+      <div
+        className="flex flex-col justify-center  "
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <div className="max-w-[650px] h-[650px] w-full mx-auto bg-gray-900 p-8 px-8 rounded-lg">
-          <p className="flex justify-end text-white text-bold text-xl">x</p>
+          <p
+            className="flex justify-end text-white text-bold text-xl"
+            onClick={onClose}
+          >
+            x
+          </p>
           <h2 className="text-4xl font-bold text-white text-center">
             account page
           </h2>
@@ -60,8 +91,8 @@ export default function Accountpage() {
           </div>
         </div>
       </div>
-      <Footer />
-    </div>
+    </div>,
+    document.getElementById("portal")!
   );
 }
 

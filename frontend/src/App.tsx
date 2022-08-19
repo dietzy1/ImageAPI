@@ -6,14 +6,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //These components are not loaded until you go to their path
-
 const Documentation = React.lazy(() => import("./Pages/Documentation"));
-const Login = React.lazy(() => import("./Pages/Loginpage"));
-const Signup = React.lazy(() => import("./Pages/Signup"));
-const Account = React.lazy(() => import("./Pages/Accountpage"));
 
 const Loading = () => <p>Loading ...</p>;
-/* import Protectedroute from "./Components/Protectedroute"; //This should probaly be added as a page later */
 
 function App() {
   return (
@@ -23,9 +18,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/documentation" element={<Documentation />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/account" element={<Account />} />
           </Routes>
         </Router>
       </React.Suspense>

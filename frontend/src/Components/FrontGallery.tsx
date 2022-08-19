@@ -15,11 +15,11 @@ function FrontGallery() {
   return (
     <div>
       <hr className="my-6 sm:mx-auto  " />
-      <div className="overflow-hidden pb-4 ">
+      <div className="overflow-hidden ">
         <div className="flex -mx-4 animate-slide">
           <img
             className="w-32 mx-2 self-start flex-none"
-            src="/static/pepes/test1.jpg"
+            src="/static/pepes/1.jpg"
             alt=""
           />
           <img
@@ -80,7 +80,7 @@ function FrontGallery() {
 
           <img
             className="w-32 mx-2 self-start flex-none"
-            src="/static/pepes/test1.jpg"
+            src="/static/pepes/1.jpg"
             alt=""
           />
           <img
