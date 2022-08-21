@@ -1,18 +1,7 @@
 image-folder
 config
-public
+
 dump.rdb
-.env
-
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/frontend/node_modules
-/.pnp
-.pnp.js
-
-# production
-/build
 
 # misc
 .DS_Store
@@ -21,8 +10,6 @@ dump.rdb
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
 
 
