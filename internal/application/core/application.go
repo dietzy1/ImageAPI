@@ -50,13 +50,13 @@ func (i Image) Validate(image Image) error {
 
 func (c Credentials) Validate(crreds Credentials) error {
 	if c.Username == "" {
-		return errors.New("no username")
+		return errors.New("username is required")
 	}
 	if c.Passwordhash == "" {
-		return errors.New("no password")
+		return errors.New("password is required")
 	}
 	if c.Key == "" {
-		return errors.New("no key")
+		return errors.New("key is required")
 	}
 	return nil
 }
@@ -117,4 +117,9 @@ func ConvertToJPEG(w io.Writer, r io.Reader) error {
 		return err
 	}
 	return jpeg.Encode(w, img, &jpeg.Options{Quality: 95})
+}
+
+func IsValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }

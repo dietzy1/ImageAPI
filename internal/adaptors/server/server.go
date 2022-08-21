@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dietzy1/imageAPI/internal/ports"
@@ -71,9 +74,27 @@ func Router(s *ServerAdapter) {
 	sb.HandleFunc("/image/", s.deleteImage).Queries("uuid", "{uuid}").Methods(http.MethodDelete)
 
 	//GET ROUTES
-	sb.HandleFunc("/image/", s.findImage).Queries("tag", "{tag}", "uuid", "{uuid}", "key", "{key}").Methods(http.MethodGet)
+	//OLD GET ROUTES
+	/* sb.HandleFunc("/image/", s.findImage).Queries("tag", "{tag}", "uuid", "{uuid}", "key", "{key}").Methods(http.MethodGet)
 	sb.HandleFunc("/images/", s.findImages).Queries("tags", "{tags}", "quantity", "{quantity}", "key", "{key}").Methods(http.MethodGet)
+	*/
+	//GET ROUTES // NEW ENDPOINTS // TODO
 
+	//get multiple photos by tags -- Query --tags && quantity && key
+	sb.HandleFunc("/images/tags/{tags}", s.findImagesTags).Queries("key", "{key}").Methods(http.MethodGet)
+	//"quantity", "{quantity}", is optional
+
+	//Get multiple random images -- Query -- quantity && key
+	sb.HandleFunc("/images/random/", s.findImagesRandom).Queries("key", "{key}").Methods(http.MethodGet)
+	//"quantity", "{quantity}", is optional
+
+	// Get single image by ID	-- Query -- uuid && key
+	sb.HandleFunc("/image/uuid/{uuid}", s.findImageUuid).Queries("key", "{key}").Methods(http.MethodGet)
+
+	//Get single random image -- Query -- key -- confirmed working
+	sb.HandleFunc("/image/random/", s.findImageRandom).Queries("key", "{key}").Methods(http.MethodGet)
+
+	//DEPRECIATED SHOULD BE REMOVED
 	//Fileserver
 	fs := http.FileServer(http.Dir("../image-folder"))
 	r.PathPrefix("/fileserver/").Handler(http.StripPrefix("/fileserver/", fs)).Methods(http.MethodGet)
@@ -91,17 +112,52 @@ func Router(s *ServerAdapter) {
 }
 
 // Entry point for http calls
-func (s *ServerAdapter) findImage(w http.ResponseWriter, r *http.Request) {
+func (s *ServerAdapter) findImageUuid(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.api.FindImage(ctx, w, r)
+	vars := mux.Vars(r)
+	query := vars["uuid"]
+	querytype := "uuid"
+
+	s.api.FindImage(ctx, w, r, query, querytype)
+}
+
+func (s *ServerAdapter) findImageRandom(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.api.FindImage(ctx, w, r, "random", "random")
 }
 
 // Entry point for http calls
-func (s *ServerAdapter) findImages(w http.ResponseWriter, r *http.Request) {
+func (s *ServerAdapter) findImagesTags(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.api.FindImages(ctx, w, r)
+
+	vars := mux.Vars(r)
+	query := strings.Split(strings.ReplaceAll(vars["tags"], " ", ""), ",")
+
+	q := r.URL.Query()
+	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
+	if err != nil || quantity <= 0 { //<= 0 is a hack to allow for a default value
+		quantity = 10
+	}
+
+	s.api.FindImages(ctx, w, r, query, "tags", quantity)
+}
+
+// Entry point for http calls
+func (s *ServerAdapter) findImagesRandom(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.Cookie("session_token"))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	q := r.URL.Query()
+	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
+	if err != nil || quantity <= 0 { //<= 0 is a hack to allow for a default value
+		quantity = 10
+	}
+
+	s.api.FindImages(ctx, w, r, nil, "random", quantity)
 }
 
 // Entry point for http calls

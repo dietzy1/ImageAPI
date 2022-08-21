@@ -162,9 +162,6 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
-		/* Name:    "session_token",
-		Value:   sessionToken,
-		Expires: time.Now().Add(time.Second * 180), */
 		Name:     "session_token",
 		Value:    sessionToken,
 		Expires:  time.Now().Add(time.Second * 180),

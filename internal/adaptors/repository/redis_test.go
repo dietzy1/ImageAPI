@@ -8,15 +8,14 @@ import (
 	"github.com/dietzy1/imageAPI/internal/ports"
 )
 
-//Mock test object
+// Mock test object
 type redismock struct {
 	redisClient ports.SessionPort
 	key         string
 	value       string
 }
 
-
-//Mock test constructor
+// Mock test constructor
 func newredisMock() *redismock {
 	redis, err := NewRedisAdapter()
 	if err != nil {

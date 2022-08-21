@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -31,7 +30,6 @@ func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Should prolly disable this shit later
 // Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,18 +43,9 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Should prolly disable this shit later
 // Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		/* 	w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
-		if r.Method == "OPTIONS" {
-			return
-		} */
-		fmt.Println(r.Header.Get("Origin"))
-		//w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")

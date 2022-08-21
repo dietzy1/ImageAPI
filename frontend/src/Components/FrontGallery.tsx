@@ -1,16 +1,5 @@
 import "../index.css";
 
-/* const image =
-  "http://localhost:8000/fileserver/b40fccdb-8e06-4d55-b4bd-b5e662a46149.jpg";
-
-const image1 =
-  "http://localhost:8000/fileserver/912d6c8f-f007-4fa2-9370-e0a7ccb69717.jpg";
- */
-//animate-sliding
-
-//12 elements maximum I know works mx-4
-
-//This is not the solution its a single large image with the other images that scrolls
 function FrontGallery() {
   return (
     <div>

@@ -22,8 +22,7 @@ const Navbar = ({ triggerParentUpdate }: any) => {
       console.log(state.user);
     }
   };
-  //bg-blacky/30
-  //bg-[#23242A]/10
+
   return (
     <div>
       <nav className="text-white flex justify-center items-center h-16 w-full px-[6rem] fixed top-0 backdrop-blur-[46px]  bg-darky/10 z-[999]  ">
@@ -65,10 +64,6 @@ const Navbar = ({ triggerParentUpdate }: any) => {
             </button>
           ) : (
             <ul>
-              {/*  <li className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20">
-                <Link to="/login"> Login</Link>
-              </li> */}
-
               <button
                 className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20"
                 onClick={() => openLoginpage(setIsOpen, setIsOpen1, setIsOpen2)}
@@ -76,11 +71,6 @@ const Navbar = ({ triggerParentUpdate }: any) => {
                 Login
               </button>
             </ul>
-
-            /*   <div
-              className="p-6 py-3 px-3 hover:text-greeny whitespace-nowrap w-20 text-white"
-              onClick={() => setIsOpen(true)}
-            ></div> */
           )}
           {state.user ? (
             <ul>

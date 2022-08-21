@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 	"github.com/dietzy1/imageAPI/internal/ports"
@@ -31,17 +29,10 @@ func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, file por
 }
 
 // Implements methods on the APi port
-func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	querytype := "uuid"
-	query := vars["uuid"]
-	if vars["uuid"] == "" {
-		querytype = "tags"
-		query = vars["tag"]
-	}
-
+func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string) {
 	image, err := a.db.FindImage(ctx, querytype, query)
 	if err != nil {
+		_ = json.NewEncoder(w).Encode(err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -55,19 +46,10 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 }
 
 // Implements methods on the APi port
-func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	querytype := "tags"
-	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
-	if err != nil || quantity <= 0 { //<= 0 is a hack to allow for a default value
-		quantity = 1
-	}
-	query := []string{}
-	tags := strings.Join(q["tags"], "")
-	query = strings.Split(tags, ", ")
-
+func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int) {
 	images, err := a.db.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
+
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

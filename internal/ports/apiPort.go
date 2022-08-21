@@ -9,8 +9,8 @@ import (
 
 // implement http server interface methods
 type ApiPort interface {
-	FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
-	FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string)
+	FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int)
 	AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request)

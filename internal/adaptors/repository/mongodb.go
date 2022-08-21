@@ -65,40 +65,64 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 
 func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query string) (*core.Image, error) {
 	collection := a.client.Database("Image-Database").Collection("images")
-	cursor, err := collection.Find(ctx, bson.D{{Key: querytype, Value: query}})
-	if err != nil {
-		return nil, err
+	// can accept uuid or random
+	image := &core.Image{}
+	switch querytype {
+	case "uuid":
+		cursor, err := collection.Find(ctx, bson.D{{Key: querytype, Value: query}})
+		if err != nil {
+			return nil, err
+		}
+		if err = cursor.All(ctx, &image); err != nil {
+			return nil, err
+		}
+
+	case "random":
+		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": 1}}})
+		if err != nil {
+			return nil, err
+		}
+		if err = cursor.All(ctx, &image); err != nil {
+			return nil, err
+		}
 	}
-	images := []core.Image{}
-	if err = cursor.All(ctx, &images); err != nil {
-		return nil, err
-	}
-	image := randomize(images)
 	return image, nil
 }
 
 func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
 	collection := a.client.Database("Image-Database").Collection("images")
+	//Can accept tags or random
 	images := []core.Image{}
 
-	var otps bson.D
-	if len(query) == 1 {
-		otps = bson.D{{Key: querytype, Value: query[0]}}
+	switch querytype {
+	case "tags":
+		var otps bson.D
+		if len(query) == 1 {
+			otps = bson.D{{Key: querytype, Value: query[0]}}
+		}
+		if len(query) == 2 {
+			otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}}
+		}
+		if len(query) >= 3 {
+			otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
+		}
+		cursor, err := collection.Find(ctx, otps)
+		if err != nil {
+			return nil, err
+		}
+		if err = cursor.All(ctx, &images); err != nil {
+			return nil, err
+		}
+		images = randomizeArray(images, quantity)
+	case "random":
+		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": quantity}}})
+		if err != nil {
+			return nil, err
+		}
+		if err = cursor.All(ctx, &images); err != nil {
+			return nil, err
+		}
 	}
-	if len(query) == 2 {
-		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}}
-	}
-	if len(query) >= 3 {
-		otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
-	}
-	cursor, err := collection.Find(ctx, otps)
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &images); err != nil {
-		return nil, err
-	}
-	images = randomizeArray(images, quantity)
 
 	return images, nil
 }
@@ -130,7 +154,7 @@ func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
 	return nil
 }
 
-func randomize(images []core.Image) *core.Image {
+/* func randomize(images []core.Image) *core.Image {
 	if len(images) == 0 {
 		return nil
 	}
@@ -138,7 +162,7 @@ func randomize(images []core.Image) *core.Image {
 	randomIndex := rand.Intn(len(images))
 	image := images[randomIndex]
 	return &image
-}
+} */
 
 // Must randomize the images based on the quantity
 func randomizeArray(images []core.Image, quantity int) []core.Image {

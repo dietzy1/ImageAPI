@@ -1,5 +1,3 @@
-import React from "react";
-
 export async function Loginfunc(username: string, password: string) {
   const formData = new FormData();
   formData.set("username", username);

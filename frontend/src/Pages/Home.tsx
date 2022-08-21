@@ -43,8 +43,12 @@ function Home() {
   const getImagesEmpty = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v0/images/?tags=Happy&quantity=20&key=${process.env.REACT_APP_API_KEY}`
+        `http://localhost:8000/api/v0/images/random/?quantity=20&key=${process.env.REACT_APP_API_KEY}`,
+        {
+          credentials: "include",
+        }
       );
+
       setImages(await res.json());
       setLoading(false);
     } catch (error) {
