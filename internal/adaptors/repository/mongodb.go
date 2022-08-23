@@ -67,26 +67,25 @@ func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query strin
 	collection := a.client.Database("Image-Database").Collection("images")
 	// can accept uuid or random
 	image := &core.Image{}
+	images := []core.Image{}
 	switch querytype {
 	case "uuid":
-		cursor, err := collection.Find(ctx, bson.D{{Key: querytype, Value: query}})
+		err := collection.FindOne(ctx, bson.D{{Key: querytype, Value: query}}).Decode(&image)
 		if err != nil {
 			return nil, err
 		}
-		if err = cursor.All(ctx, &image); err != nil {
-			return nil, err
-		}
-
+		return image, nil
 	case "random":
 		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": 1}}})
 		if err != nil {
 			return nil, err
 		}
-		if err = cursor.All(ctx, &image); err != nil {
+		if err = cursor.All(ctx, &images); err != nil {
 			return nil, err
 		}
+		return &images[0], nil
 	}
-	return image, nil
+	return nil, nil
 }
 
 func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
@@ -136,9 +135,9 @@ func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 	return nil
 }
 
-func (a *DbAdapter) UpdateImage(ctx context.Context, uuid string, image *core.Image) error {
+func (a *DbAdapter) UpdateImage(ctx context.Context, image *core.Image) error {
 	collection := a.client.Database("Image-Database").Collection("images")
-	_, err := collection.UpdateOne(ctx, bson.M{"uuid": uuid}, bson.M{"$set": image})
+	_, err := collection.UpdateOne(ctx, bson.M{"uuid": image.Uuid}, bson.M{"$set": image})
 	if err != nil {
 		return err
 	}

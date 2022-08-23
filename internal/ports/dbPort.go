@@ -13,7 +13,7 @@ type DbPort interface {
 	FindImage(ctx context.Context, querytype string, query string) (*core.Image, error)
 	FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error)
 	StoreImage(ctx context.Context, image *core.Image) error
-	UpdateImage(ctx context.Context, uuid string, image *core.Image) error
+	UpdateImage(ctx context.Context, image *core.Image) error
 	DeleteImage(ctx context.Context, uuid string) error
 }
 

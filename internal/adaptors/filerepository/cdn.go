@@ -54,8 +54,8 @@ func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *byt
 	return res.Data.Url, nil
 }
 
-func (f *FileAdapter) DeleteFile(ctx context.Context, image core.Image) error {
-	fileid, err := f.GetFile(ctx, image)
+func (f *FileAdapter) DeleteFile(ctx context.Context, uuid string) error {
+	fileid, err := f.GetFile(ctx, uuid)
 	if err != nil {
 		return err
 	}
@@ -63,12 +63,11 @@ func (f *FileAdapter) DeleteFile(ctx context.Context, image core.Image) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func (f *FileAdapter) GetFile(ctx context.Context, image core.Image) (string, error) {
-	query := fmt.Sprintf(`name = "%s"`, image.Name+".jpg")
+func (f *FileAdapter) GetFile(ctx context.Context, uuid string) (string, error) {
+	query := fmt.Sprintf(`name = "%s"`, uuid+".jpg")
 	res, err := f.client.Media.Files(ctx, media.FilesParam{
 		SearchQuery: query,
 	})
@@ -80,7 +79,7 @@ func (f *FileAdapter) GetFile(ctx context.Context, image core.Image) (string, er
 }
 
 func (f *FileAdapter) UpdateFile(ctx context.Context, image core.Image) error {
-	fileid, err := f.GetFile(ctx, image)
+	fileid, err := f.GetFile(ctx, image.Uuid)
 	if err != nil {
 		return err
 	}

@@ -71,3 +71,7 @@ func (a *DbAdapter) Signin(ctx context.Context, username string) (core.Credentia
 	}
 	return cred, nil
 }
+
+func (a *DbAdapter) DeleteAccount(ctx context.Context, username string) error {
+	return nil
+}

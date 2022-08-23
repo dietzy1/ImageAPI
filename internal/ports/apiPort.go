@@ -17,7 +17,7 @@ type ApiPort interface {
 }
 
 type AuthenticationPort interface {
-	AddKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	UpdateKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	DeleteKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
 	ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request)

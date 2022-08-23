@@ -37,12 +37,12 @@ type Credentials struct {
 
 func (i Image) Validate(image Image) error {
 	if i.Name == "" {
-		fmt.Println("returning")
-		return errors.New("")
+		fmt.Println("returning name")
+		return errors.New("empty name")
 	}
 	if len(i.Tags) == 0 {
 		fmt.Println("returning tags")
-		return errors.New("")
+		return errors.New("empty tags")
 	}
 	fmt.Println("Validation ok")
 	return nil
@@ -59,6 +59,10 @@ func (c Credentials) Validate(crreds Credentials) error {
 		return errors.New("key is required")
 	}
 	return nil
+}
+
+func Errconv(err error) string {
+	return fmt.Sprintf("%s", err)
 }
 
 func (i *Image) NewUUID() string {

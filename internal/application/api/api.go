@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
@@ -18,25 +17,25 @@ type Application struct {
 	db      ports.DbPort
 	dbauth  ports.DbAuthenticationPort
 	session ports.SessionPort
-	file    ports.FilePort
+	cdn     ports.CdnPort
 	image   core.Image
 	creds   core.Credentials
 }
 
 // Constructor
-func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, file ports.FilePort, session ports.SessionPort) *Application {
-	return &Application{db: db, dbauth: dbauth, file: file, session: session}
+func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, cdn ports.CdnPort, session ports.SessionPort) *Application {
+	return &Application{db: db, dbauth: dbauth, cdn: cdn, session: session}
 }
 
 // Implements methods on the APi port
 func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string) {
 	image, err := a.db.FindImage(ctx, querytype, query)
 	if err != nil {
-		_ = json.NewEncoder(w).Encode(err)
 		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
+
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	if image == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -49,17 +48,14 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int) {
 	images, err := a.db.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
-
 		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	for i := 0; i < len(images); i++ {
-		images[i].Filepath = "http://localhost:8000/fileserver/" + images[i].Uuid + ".jpg"
-		w.Header().Set("Content-Type", "application/json")
-	}
 	if images == nil {
 		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	json.NewEncoder(w).Encode(images)
@@ -70,95 +66,112 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to add image while parsing")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to parse the multipartform. Here is the error value:", core.Errconv(err)})
 		return
 	}
 
 	image := core.Image{
-		Name:    r.Form.Get("Name"),
+		Name:    r.Form.Get("name"),
 		Uuid:    a.image.NewUUID(),
-		Tags:    core.Split(r.Form.Get("Tags")),
+		Tags:    core.Split(r.Form.Get("tags")),
 		Created: a.image.SetTime(),
 	}
-	data, _, err := r.FormFile("data")
-	if err != nil {
-		_ = json.NewEncoder(w).Encode("Unable to parse file data")
-		return
-	}
-	defer data.Close()
-
-	buf := new(bytes.Buffer)
-	err = core.ConvertToJPEG(buf, data)
-	if err != nil {
-		_ = json.NewEncoder(w).Encode("Unable to convert file to jpg")
-		fmt.Println(err)
-		return
-	}
-	image.Validate(image)
+	file, _, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Missing name or tag")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to parse file data. Here is the error value:", core.Errconv(err)})
+		return
+	}
+	defer file.Close()
+
+	buf := new(bytes.Buffer)
+	err = core.ConvertToJPEG(buf, file)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to convert file to jpg. Here is the error value:", core.Errconv(err)})
+		return
+	}
+	err = image.Validate(image)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
 		return
 	}
 
-	url, err := a.file.UploadFile(ctx, image, buf)
+	url, err := a.cdn.UploadFile(ctx, image, buf)
 	if err != nil {
-		_ = json.NewEncoder(w).Encode("Unable to upload file")
-		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to upload file to cdn. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	image.Filepath = url
 
 	err = a.db.StoreImage(ctx, &image)
 	if err != nil {
-		//Call to delete file
-		a.file.DeleteFile(ctx, image)
+		a.cdn.DeleteFile(ctx, image.Uuid)
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(image)
 }
 
-// need to implement role
 // Implements methods on the APi port
 func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	err := a.db.DeleteImage(ctx, vars["uuid"])
+	err := a.cdn.DeleteFile(ctx, vars["uuid"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to delete image")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image in the cdn. Here is the error value:", core.Errconv(err)})
+		return
+	}
+
+	err = a.db.DeleteImage(ctx, vars["uuid"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image in the mongodb. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }
 
-// Need to implement role
 // Implements methods on the APi port
 func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	decoder := json.NewDecoder(r.Body)
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to parse the multipartform. Here is the error value:", core.Errconv(err)})
+		return
+	}
 
-	err := decoder.Decode(&a.image)
+	image := core.Image{
+		Name:    r.Form.Get("name"),
+		Uuid:    r.Form.Get("uuid"),
+		Tags:    core.Split(r.Form.Get("tags")),
+		Created: a.image.SetTime(),
+	}
+	err = image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to update image")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = a.db.UpdateImage(ctx, vars["uuid"], &a.image)
+
+	err = a.db.UpdateImage(ctx, &image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to update image")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to update the image in mongodb. Here is the error value:", core.Errconv(err)})
 		return
 	}
-	err = a.file.UpdateFile(ctx, a.image)
+	err = a.cdn.UpdateFile(ctx, image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode("Unable to update image")
+		_ = json.NewEncoder(w).Encode([]any{"Unable to parse the image in cdn. Here is the error value:", core.Errconv(err)})
 		return
 
 	}
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(image)
 }

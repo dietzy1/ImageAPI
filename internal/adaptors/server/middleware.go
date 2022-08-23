@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/mux"
 	"golang.org/x/time/rate"
 )
 
@@ -68,10 +69,9 @@ type rateLimiting struct {
 // Rate limiting middleware
 func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//key := mux.Vars(r)["key"]
-		key := "1"
+		key := mux.Vars(r)["key"]
 		rl := rateLimiting{}
-		rl.c = rl.ratelimitKey(key)
+		rl.c = rl.ratelimit(key)
 		if !rl.c.Allow() {
 			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			log.Default().Printf("Rate limit exceeded for key %s", key)
@@ -81,13 +81,35 @@ func (s *ServerAdapter) rateLimitingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (rl *rateLimiting) ratelimitKey(key string) *rate.Limiter {
+func (rl *rateLimiting) ratelimit(rateString string) *rate.Limiter {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	limiter, exists := cooldown[key]
+	limiter, exists := cooldown[rateString]
 	if !exists {
-		limiter = rate.NewLimiter(1%2, 1) //Still need to configure the exact rate limit
-		cooldown[key] = limiter
+		limiter = rate.NewLimiter(1%2, 5) //Still need to configure the exact rate limit
+		cooldown[rateString] = limiter
 	}
 	return limiter
+}
+
+func (s *ServerAdapter) ipRateLimitingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rl := rateLimiting{}
+		ip := getIP(r)
+		rl.c = rl.ratelimit(ip)
+		if !rl.c.Allow() {
+			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+			log.Default().Printf("Rate limit exceeded for key %s", ip)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func getIP(r *http.Request) string {
+	forwarded := r.Header.Get("X-FORWARDED-FOR")
+	if forwarded != "" {
+		return forwarded
+	}
+	return r.RemoteAddr
 }

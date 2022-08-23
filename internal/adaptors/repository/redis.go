@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// Need to implement redis cloud based client
 func NewRedisAdapter() (*DbAdapter, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -22,7 +23,7 @@ func NewRedisAdapter() (*DbAdapter, error) {
 	}, nil
 }
 
-//Keys exspire after 180 seconds
+// Keys exspire after 180 seconds
 func (a *DbAdapter) Set(ctx context.Context, key string, session interface{}) error {
 	err := a.redisClient.Set(ctx, key, session, 180*time.Second).Err()
 	if err != nil {

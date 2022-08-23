@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -47,6 +46,7 @@ func Router(s *ServerAdapter) {
 	au := r.PathPrefix("/auth").Subrouter()
 	au.Use(s.loggingMiddleware)
 	au.Use(s.corsMiddlewareCookie)
+	au.Use(s.ipRateLimitingMiddleware)
 
 	//Login logout ROUTES
 	au.HandleFunc("/signin/", s.signin).Methods(http.MethodPost)
@@ -62,24 +62,17 @@ func Router(s *ServerAdapter) {
 
 	//Image subrouter routes
 	sb := r.PathPrefix("/api/v0").Subrouter()
-	//Applies middleware to all subrouters
 	sb.Use(s.loggingMiddleware)
 	sb.Use(s.corsMiddleware)
-	//sb.Use(s.rateLimitingMiddleware)
+	sb.Use(s.rateLimitingMiddleware)
 	sb.Use(s.authenticateKey)
 
 	//POST, PUT, DELETE ROUTES
-	sb.HandleFunc("/image/", s.addImage).Methods(http.MethodPost) //form data
-	sb.HandleFunc("/image/", s.updateImage).Queries("uuid", "{uuid}").Methods(http.MethodPut)
-	sb.HandleFunc("/image/", s.deleteImage).Queries("uuid", "{uuid}").Methods(http.MethodDelete)
+	sb.HandleFunc("/image/", s.addImage).Methods(http.MethodPost)   //form data
+	sb.HandleFunc("/image/", s.updateImage).Methods(http.MethodPut) //form data
+	sb.HandleFunc("/image/{uuid}", s.deleteImage).Queries("key", "{key}").Methods(http.MethodDelete)
 
-	//GET ROUTES
-	//OLD GET ROUTES
-	/* sb.HandleFunc("/image/", s.findImage).Queries("tag", "{tag}", "uuid", "{uuid}", "key", "{key}").Methods(http.MethodGet)
-	sb.HandleFunc("/images/", s.findImages).Queries("tags", "{tags}", "quantity", "{quantity}", "key", "{key}").Methods(http.MethodGet)
-	*/
 	//GET ROUTES // NEW ENDPOINTS // TODO
-
 	//get multiple photos by tags -- Query --tags && quantity && key
 	sb.HandleFunc("/images/tags/{tags}", s.findImagesTags).Queries("key", "{key}").Methods(http.MethodGet)
 	//"quantity", "{quantity}", is optional
@@ -94,11 +87,6 @@ func Router(s *ServerAdapter) {
 	//Get single random image -- Query -- key -- confirmed working
 	sb.HandleFunc("/image/random/", s.findImageRandom).Queries("key", "{key}").Methods(http.MethodGet)
 
-	//DEPRECIATED SHOULD BE REMOVED
-	//Fileserver
-	fs := http.FileServer(http.Dir("../image-folder"))
-	r.PathPrefix("/fileserver/").Handler(http.StripPrefix("/fileserver/", fs)).Methods(http.MethodGet)
-
 	srv := &http.Server{ //&http.Server
 		Handler:      r,
 		Addr:         os.Getenv("SERVER_PORT"),
@@ -108,7 +96,6 @@ func Router(s *ServerAdapter) {
 	}
 	log.Fatal(srv.ListenAndServe())
 	s.router = r
-
 }
 
 // Entry point for http calls
@@ -147,7 +134,6 @@ func (s *ServerAdapter) findImagesTags(w http.ResponseWriter, r *http.Request) {
 
 // Entry point for http calls
 func (s *ServerAdapter) findImagesRandom(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Cookie("session_token"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -196,13 +182,13 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.AddKey(ctx, w, r)
+	s.authentication.UpdateKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.AddKey(ctx, w, r)
+	s.authentication.UpdateKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
