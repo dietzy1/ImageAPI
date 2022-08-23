@@ -113,3 +113,12 @@ func getIP(r *http.Request) string {
 	}
 	return r.RemoteAddr
 }
+
+//garbage collector for the rate limiter
+/* func (rl *rateLimiting) gc() {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	for {
+	}
+} */

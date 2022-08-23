@@ -6,14 +6,15 @@ LABEL maintainer="Martin Vad <https://github.com/dietzy1/>"
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.mod ./
+COPY go.sum ./
 
 RUN go mod download && go mod verify
 
 COPY *.go ./
 
-RUN go build -v -o /imageapi
+RUN go build -v -o /docker-imageapi
 
 EXPOSE 8000
 
-CMD [ "/docker-gs-ping" ]
+CMD [ "/docker-imageapi" ]

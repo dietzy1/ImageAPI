@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -9,13 +10,13 @@ import (
 
 // Need to implement redis cloud based client
 func NewRedisAdapter() (*DbAdapter, error) {
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", //
-		DB:       0,  // use default DB
-	})
-	if _, err := redisClient.Ping(context.Background()).Result(); err != nil {
+	otp, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err)
+	}
+	redisClient := redis.NewClient(otp)
 
+	if _, err := redisClient.Ping(context.Background()).Result(); err != nil {
 		return nil, err
 	}
 	return &DbAdapter{
