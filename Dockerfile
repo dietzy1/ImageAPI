@@ -13,7 +13,7 @@ RUN go mod download && go mod verify
 
 COPY *.go ./
 
-RUN go build -v -o /docker-imageapi
+RUN go build -o /docker-imageapi
 
 EXPOSE 8000
 
