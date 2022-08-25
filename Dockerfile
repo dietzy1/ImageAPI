@@ -11,7 +11,8 @@ COPY go.sum ./
 
 RUN go mod download && go mod verify
 
-COPY *.go ./
+COPY *.go ./cmd
+COPY *.go ./interrnal
 
 RUN go build -o /docker-imageapi
 
