@@ -12,10 +12,10 @@ COPY go.sum ./
 RUN go mod download && go mod verify
 
 COPY *.go ./cmd
-COPY *.go ./interrnal
+COPY *.go ./internal
 
-RUN go build -o /docker-imageapi
+RUN go build -o ./docker-imageapi
 
 EXPOSE 8000
 
-CMD [ "/docker-imageapi" ]
+CMD [ "./docker-imageapi" ]
