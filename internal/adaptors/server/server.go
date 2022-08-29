@@ -90,7 +90,7 @@ func Router(s *ServerAdapter) {
 
 	srv := &http.Server{ //&http.Server
 		Handler:      r,
-		Addr:         os.Getenv("PORT"),
+		Addr:         "0.0.0.0:" + os.Getenv("PORT"),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
