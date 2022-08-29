@@ -16,6 +16,6 @@ COPY *.go /app/
 
 RUN go build -o example cmd/main.go
 
-EXPOSE 8000
+#EXPOSE 8000
 
 CMD [ "./example" ]

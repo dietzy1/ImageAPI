@@ -95,6 +95,7 @@ func Router(s *ServerAdapter) {
 		IdleTimeout:  60 * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
+	log.Println("Listening on port:", srv.Addr)
 	s.router = r
 }
 
