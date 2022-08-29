@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -89,13 +90,13 @@ func Router(s *ServerAdapter) {
 
 	srv := &http.Server{ //&http.Server
 		Handler:      r,
-		Addr:         os.Getenv("SERVER_PORT"),
+		Addr:         os.Getenv("PORT"),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
-	log.Println("Listening on port:", srv.Addr)
+	fmt.Println("Listening on port:", srv.Addr)
 	s.router = r
 }
 
