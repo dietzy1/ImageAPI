@@ -47,7 +47,7 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 // Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "https://imageapi-production.up.railway.app")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -59,11 +59,14 @@ func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	})
 }
 
-var cooldown = make(map[string]*rate.Limiter)
+//var cooldown = make(map[string]*rate.Limiter)
+
+var cooldown = make(map[string]*rateLimiting)
 
 type rateLimiting struct {
-	c  *rate.Limiter
-	mu sync.Mutex
+	c          *rate.Limiter
+	mu         sync.Mutex
+	expiration time.Time
 }
 
 // Rate limiting middleware
@@ -86,11 +89,26 @@ func (rl *rateLimiting) ratelimit(rateString string) *rate.Limiter {
 	defer rl.mu.Unlock()
 	limiter, exists := cooldown[rateString]
 	if !exists {
-		limiter = rate.NewLimiter(1%2, 5) //Still need to configure the exact rate limit
+		limiter = &rateLimiting{
+			c:          rate.NewLimiter(1, 5),
+			expiration: time.Now().Add(1 * time.Hour),
+		}
+		cooldown[rateString] = limiter
+
+	}
+	return limiter.c
+}
+
+/* func (rl *rateLimiting) ratelimit(rateString string) *rate.Limiter {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	limiter, exists := cooldown[rateString]
+	if !exists {
+		limiter = rate.NewLimiter(1, 5) //Still need to configure the exact rate limit
 		cooldown[rateString] = limiter
 	}
 	return limiter
-}
+} */
 
 func (s *ServerAdapter) ipRateLimitingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +117,7 @@ func (s *ServerAdapter) ipRateLimitingMiddleware(next http.Handler) http.Handler
 		rl.c = rl.ratelimit(ip)
 		if !rl.c.Allow() {
 			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
-			log.Default().Printf("Rate limit exceeded for key %s", ip)
+			log.Default().Printf("Rate limit exceeded for ip %s", ip)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -114,11 +132,20 @@ func getIP(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-//garbage collector for the rate limiter
-/* func (rl *rateLimiting) gc() {
+// garbage collector for the rate limiter
+func (rl *rateLimiting) gc() {
+	var newCooldown = make(map[string]*rateLimiting)
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-
-	for {
+	for k, v := range cooldown {
+		if v.expiration.Unix() < time.Now().Unix() {
+			delete(cooldown, k)
+		} else {
+			newCooldown[k] = v
+		}
 	}
-} */
+	cooldown = nil
+	cooldown = newCooldown
+	time.Sleep(1 * time.Hour)
+	rl.gc()
+}

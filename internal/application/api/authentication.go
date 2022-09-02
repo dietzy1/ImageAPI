@@ -190,8 +190,6 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 
 func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
-	r.Cookies()
-	r.Response.Cookies()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
@@ -247,4 +245,31 @@ func (a Application) Refresh(ctx context.Context, w http.ResponseWriter, r *http
 		Secure:   true,
 		Path:     "/",
 	})
+}
+
+// Take the session token from the cookie and use that
+func (a Application) DeleteAccount(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			_ = json.NewEncoder(w).Encode("Unable to get session cookie")
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	username, err := a.session.Get(ctx, cookie.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode("Session does not exist in redis db")
+		return
+	}
+	err = a.dbauth.DeleteAccount(ctx, username)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode("Unable to delete account in the database")
+		return
+	}
+	_ = json.NewEncoder(w).Encode("Account details has succesfully been deleted")
 }

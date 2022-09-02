@@ -18,20 +18,21 @@ import (
 )
 
 func main() {
-	//config.Env()
-	//Database adapter - //internal/db
+
+	//Database adapter
 	redisdb, err := repository.NewRedisAdapter()
 	fmt.Println("Redis adapter:", redisdb)
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	//database adapter
 	mongodb, err := repository.NewMongoAdapter()
 	fmt.Println("DB adapter initialized: ", mongodb)
 	if err != nil {
 		fmt.Println(err)
 	}
-
+	//Cdn adapter
 	filedb, err := filerepository.NewImageKitClientAdapter()
 	fmt.Println("File adapter initialized: ", filedb)
 	if err != nil {

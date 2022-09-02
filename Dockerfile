@@ -12,10 +12,8 @@ COPY go.sum ./
 
 RUN go mod download && go mod verify
 
-COPY *.go /app/
+#COPY *.go /app/
 
 RUN go build -o example cmd/main.go
-
-#EXPOSE 8000
 
 CMD [ "./example" ]

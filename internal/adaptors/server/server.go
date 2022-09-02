@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"crypto/tls"
 	"io"
 	"log"
 	"net/http"
@@ -55,6 +55,7 @@ func Router(s *ServerAdapter) {
 	au.HandleFunc("/signout/", s.signout).Methods(http.MethodPost)
 	au.HandleFunc("/refresh/", s.refresh).Methods(http.MethodPost)
 	au.HandleFunc("/deletekey/", s.deleteAPIKey).Methods(http.MethodPost)
+	au.HandleFunc("/deleteaccount/", s.deleteAccount).Methods(http.MethodPost)
 
 	//Key generation routes
 	au.HandleFunc("/generatekey/", s.generateAPIKey).Methods(http.MethodGet)
@@ -94,9 +95,13 @@ func Router(s *ServerAdapter) {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		TLSConfig:    &tls.Config{},
 	}
+	rl := rateLimiting{}
+	//Instantiate garbage collection of the cooldowns map
+	go rl.gc()
 	log.Fatal(srv.ListenAndServe())
-	fmt.Println("Listening on port:", srv.Addr)
+
 	s.router = r
 }
 
@@ -227,4 +232,10 @@ func (s *ServerAdapter) refresh(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.authentication.Refresh(ctx, w, r)
+}
+
+func (s *ServerAdapter) deleteAccount(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.authentication.DeleteAccount(ctx, w, r)
 }

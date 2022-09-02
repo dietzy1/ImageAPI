@@ -25,4 +25,5 @@ type AuthenticationPort interface {
 	Signin(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Signout(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	Refresh(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	DeleteAccount(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }

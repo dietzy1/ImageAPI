@@ -25,6 +25,7 @@ type DbAuthenticationPort interface {
 	GetKey(ctx context.Context, userrname string) (string, error)
 	Signup(ctx context.Context, creds core.Credentials) error
 	Signin(ctx context.Context, username string) (core.Credentials, error)
+	DeleteAccount(ctx context.Context, username string) error
 }
 
 type SessionPort interface {

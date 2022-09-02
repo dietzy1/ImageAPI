@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,7 +23,6 @@ func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) (string, bo
 	collection := a.client.Database("Credential-Database").Collection("Credentials")
 	//Check if the key is in the database if not return false
 	cred := core.Credentials{}
-	fmt.Println("Key:", key)
 	err := collection.FindOne(ctx, bson.M{"key": key}).Decode(&cred)
 	if err != nil {
 		return "", false
@@ -72,6 +70,12 @@ func (a *DbAdapter) Signin(ctx context.Context, username string) (core.Credentia
 	return cred, nil
 }
 
+// Might need to reconfigure this in a better way later
 func (a *DbAdapter) DeleteAccount(ctx context.Context, username string) error {
+	collection := a.client.Database("Credential-Database").Collection("Credentials")
+	result := collection.FindOneAndDelete(ctx, username)
+	if result.Err() != nil {
+		return result.Err()
+	}
 	return nil
 }
