@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -11,6 +10,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
+
+//I need to create 3 different roles 1 and 2 where 1 is admin priviledge and 2 is a normal user
+//And then routes needs to be restricted based on the role someone has
+//Only one who should be able to generate an admin account is an admin
+
+//1 == root generate other admin accounts
+//2 == admin acc has access to all routes except root
+//3 == normal user only has access to get endpoints and basic authentication.
 
 //Communicates with mongodb database via the interface DbKeyPort
 
@@ -195,7 +202,6 @@ func (a Application) Signout(ctx context.Context, w http.ResponseWriter, r *http
 		_ = json.NewEncoder(w).Encode("Unable to get session cookie")
 		return
 	}
-	fmt.Println(cookie.Value)
 	err = a.session.Delete(ctx, cookie.Value)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

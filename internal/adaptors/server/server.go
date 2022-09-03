@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"io"
 	"log"
 	"net/http"
@@ -95,7 +94,6 @@ func Router(s *ServerAdapter) {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
-		TLSConfig:    &tls.Config{},
 	}
 	rl := rateLimiting{}
 	//Instantiate garbage collection of the cooldowns map
