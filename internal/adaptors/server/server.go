@@ -15,9 +15,10 @@ import (
 )
 
 type ServerAdapter struct {
-	api            ports.ApiPort
-	router         http.Handler
-	authentication ports.AuthenticationPort
+	api     ports.ApiPort
+	router  http.Handler
+	accauth ports.AccAuthPort
+	keyauth ports.KeyAuthPort
 }
 
 // helper function
@@ -28,8 +29,8 @@ type ServerAdapter struct {
 } */
 
 // Constructor
-func NewServerAdapter(api ports.ApiPort, authentication ports.AuthenticationPort) *ServerAdapter {
-	return &ServerAdapter{api: api, authentication: authentication}
+func NewServerAdapter(api ports.ApiPort, accauth ports.AccAuthPort, keyauth ports.KeyAuthPort) *ServerAdapter {
+	return &ServerAdapter{api: api, accauth: accauth, keyauth: keyauth}
 }
 
 // Wrapper for router object
@@ -126,7 +127,8 @@ func (s *ServerAdapter) findImagesTags(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	vars := mux.Vars(r)
-	query := strings.Split(strings.ReplaceAll(vars["tags"], " ", ""), ",")
+	//query := strings.Split(strings.ReplaceAll(vars["tags"], " ", ""), ",")
+	query := strings.Split(strings.ReplaceAll(strings.ToLower(vars["tags"]), " ", ""), ",")
 
 	q := r.URL.Query()
 	quantity, err := strconv.Atoi(strings.Join(q["quantity"], ""))
@@ -187,53 +189,53 @@ func (s *ServerAdapter) healthcheck(w http.ResponseWriter, r *http.Request) {
 func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.UpdateKey(ctx, w, r)
+	s.keyauth.UpdateKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.UpdateKey(ctx, w, r)
+	s.keyauth.UpdateKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.DeleteKey(ctx, w, r)
+	s.keyauth.DeleteKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) showAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.ShowKey(ctx, w, r)
+	s.keyauth.ShowKey(ctx, w, r)
 }
 
 func (s *ServerAdapter) signup(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.Signup(ctx, w, r)
+	s.accauth.Signup(ctx, w, r)
 }
 
 func (s *ServerAdapter) signin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.Signin(ctx, w, r)
+	s.accauth.Signin(ctx, w, r)
 }
 
 func (s *ServerAdapter) signout(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.Signout(ctx, w, r)
+	s.accauth.Signout(ctx, w, r)
 }
 
 func (s *ServerAdapter) refresh(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.Refresh(ctx, w, r)
+	s.accauth.Refresh(ctx, w, r)
 }
 
 func (s *ServerAdapter) deleteAccount(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.authentication.DeleteAccount(ctx, w, r)
+	s.accauth.DeleteAccount(ctx, w, r)
 }

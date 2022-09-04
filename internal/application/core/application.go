@@ -7,7 +7,7 @@ import (
 	"image"
 	_ "image/gif"
 	"image/jpeg"
-	_ "image/jpeg"
+
 	_ "image/png"
 	"io"
 	"strings"
@@ -20,21 +20,22 @@ import (
 )
 
 type Image struct {
-	Name     string    `json:"name" bson:"name"`
-	Uuid     string    `json:"uuid" bson:"uuid"`
-	Tags     []string  `json:"tags" bson:"tags"`
-	Created  time.Time `json:"created" bson:"created"`
-	Filepath string    `json:"filepath" bson:"filepath"`
+	Name       string   `json:"name" bson:"name"`
+	Uuid       string   `json:"uuid" bson:"uuid"`
+	Tags       []string `json:"tags" bson:"tags"`
+	Created_At string   `json:"created_at" bson:"created_at"`
+	Filepath   string   `json:"filepath" bson:"filepath"`
 }
 
 type Credentials struct {
-	Username     string    `json:"username" bson:"username"`
-	Passwordhash string    `json:"passwordhash" bson:"passwordhash"`
-	Key          string    `json:"key" bson:"key"`
-	Created      time.Time `json:"created" bson:"created"`
-	Role         int       `json:"role" bson:"role"`
+	Username     string `json:"username" bson:"username"`
+	Passwordhash string `json:"passwordhash" bson:"passwordhash"`
+	Key          string `json:"key" bson:"key"`
+	Created_At   string `json:"created_at" bson:"created_at"`
+	Role         int    `json:"role" bson:"role"`
 }
 
+// Simple validation againt the image struct that checks if name and tags are empty
 func (i Image) Validate(image Image) error {
 	if i.Name == "" {
 		fmt.Println("returning name")
@@ -44,10 +45,11 @@ func (i Image) Validate(image Image) error {
 		fmt.Println("returning tags")
 		return errors.New("empty tags")
 	}
-	fmt.Println("Validation ok")
+
 	return nil
 }
 
+// Simple validation againt the credentials struct that checks if username, password and key are empty strings
 func (c Credentials) Validate(crreds Credentials) error {
 	if c.Username == "" {
 		return errors.New("username is required")
@@ -61,22 +63,19 @@ func (c Credentials) Validate(crreds Credentials) error {
 	return nil
 }
 
+// Converts an error to a string
 func Errconv(err error) string {
 	return fmt.Sprintf("%s", err)
 }
 
+// Returns a newly generated uuid string
 func (i *Image) NewUUID() string {
 	return uuid.New().String()
 }
 
 // can add a generic method for setting time
-func (i *Image) SetTime() time.Time {
-	//i.Created = time.Now().Format(time.RFC3339)
-	return time.Now()
-}
-
-func (c *Credentials) SetTime() {
-	c.Created = time.Now()
+func (i *Image) SetTime() string {
+	return time.Now().Format("RFC1123")
 }
 
 func GenerateAPIKey() string {
@@ -88,6 +87,7 @@ func GenerateAPIKey() string {
 	return fmt.Sprintf("%X-%X-%X", b[0:2], b[4:8], b[8:11])
 }
 
+// Initial validation to deter keys with wrong format
 func ValidateKey(key string) bool {
 	runearray := []rune(key)
 	if runearray[5] == '-' || runearray[14] == '-' {
@@ -97,9 +97,9 @@ func ValidateKey(key string) bool {
 }
 
 // Input r.Form.Get("Tags")
+// Splits a single string into an array of lowercase letters without any whitespace
 func Split(input string) []string {
-	input = strings.TrimSpace(input)
-	return strings.Split(input, ",")
+	return strings.Split(strings.ReplaceAll(strings.ToLower(input), " ", ""), ",")
 }
 
 func (c *Credentials) Hash(password string) string {
@@ -110,11 +110,13 @@ func (c *Credentials) Hash(password string) string {
 	return string(hashedPassword)
 }
 
+// Compares password from mongodb with input password
 func (c *Credentials) CompareHash(storedpassword string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(password))
 	return err == nil
 }
 
+// Accepts formats of webp, png, jpeg and gif
 func ConvertToJPEG(w io.Writer, r io.Reader) error {
 	img, _, err := image.Decode(r)
 	if err != nil {
@@ -123,6 +125,7 @@ func ConvertToJPEG(w io.Writer, r io.Reader) error {
 	return jpeg.Encode(w, img, &jpeg.Options{Quality: 95})
 }
 
+// Validation of uuid
 func IsValidUUID(u string) bool {
 	_, err := uuid.Parse(u)
 	return err == nil

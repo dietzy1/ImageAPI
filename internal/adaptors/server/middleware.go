@@ -16,7 +16,7 @@ func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if !s.authentication.AuthenticateKey(ctx, w, r) {
+		if !s.keyauth.AuthenticateKey(ctx, w, r) {
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -47,7 +47,6 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 // Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//w.Header().Set("Access-Control-Allow-Origin", "https://imageapi-production.up.railway.app")
 		w.Header().Set("Access-Control-Allow-Origin", "https://pepe-api.vercel.app")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
@@ -148,5 +147,6 @@ func (rl *rateLimiting) gc() {
 	cooldown = nil
 	cooldown = newCooldown
 	time.Sleep(1 * time.Hour)
+	log.Println("Garbage collector initialized")
 	rl.gc()
 }

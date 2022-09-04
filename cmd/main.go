@@ -44,7 +44,7 @@ func main() {
 	fmt.Println("API adapter initialized: ", applicationAPI)
 
 	//serverAdapter - //internal/server
-	serverAdapter := server.NewServerAdapter(applicationAPI, applicationAPI)
+	serverAdapter := server.NewServerAdapter(applicationAPI, applicationAPI, applicationAPI)
 	fmt.Println("Server adapter initialized: ", serverAdapter)
 	server.Router(serverAdapter)
 }

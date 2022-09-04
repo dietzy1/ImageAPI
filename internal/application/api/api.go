@@ -71,10 +71,10 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 
 	image := core.Image{
-		Name:    r.Form.Get("name"),
-		Uuid:    a.image.NewUUID(),
-		Tags:    core.Split(r.Form.Get("tags")),
-		Created: a.image.SetTime(),
+		Name:       r.Form.Get("name"),
+		Uuid:       a.image.NewUUID(),
+		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
+		Created_At: a.image.SetTime(),
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -147,10 +147,10 @@ func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	image := core.Image{
-		Name:    r.Form.Get("name"),
-		Uuid:    r.Form.Get("uuid"),
-		Tags:    core.Split(r.Form.Get("tags")),
-		Created: a.image.SetTime(),
+		Name:       r.Form.Get("name"),
+		Uuid:       r.Form.Get("uuid"),
+		Tags:       core.Split(r.Form.Get("tags")),
+		Created_At: a.image.SetTime(),
 	}
 	err = image.Validate(image)
 	if err != nil {
