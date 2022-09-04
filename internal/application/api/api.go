@@ -14,22 +14,24 @@ import (
 
 // Implements the Api port methods
 type Application struct {
-	db      ports.DbPort
-	dbauth  ports.DbAuthenticationPort
-	session ports.SessionPort
-	cdn     ports.CdnPort
-	image   core.Image
-	creds   core.Credentials
+	dbImage   ports.DbImagePort
+	dbAccAuth ports.DbAccAuthPort
+	dbKeyAuth ports.DbKeyAuthPort
+	session   ports.SessionPort
+
+	cdn   ports.CdnPort
+	image core.Image
+	creds core.Credentials
 }
 
 // Constructor
-func NewApplication(db ports.DbPort, dbauth ports.DbAuthenticationPort, cdn ports.CdnPort, session ports.SessionPort) *Application {
-	return &Application{db: db, dbauth: dbauth, cdn: cdn, session: session}
+func NewApplication(dbImage ports.DbImagePort, dbAccAuth ports.DbAccAuthPort, dbKeyAuth ports.DbKeyAuthPort, session ports.SessionPort, cdn ports.CdnPort) *Application {
+	return &Application{dbImage: dbImage, dbAccAuth: dbAccAuth, dbKeyAuth: dbKeyAuth, cdn: cdn, session: session}
 }
 
 // Implements methods on the APi port
 func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string) {
-	image, err := a.db.FindImage(ctx, querytype, query)
+	image, err := a.dbImage.FindImage(ctx, querytype, query)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
@@ -46,7 +48,7 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 
 // Implements methods on the APi port
 func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int) {
-	images, err := a.db.FindImages(ctx, querytype, query, quantity)
+	images, err := a.dbImage.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
@@ -106,7 +108,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 	image.Filepath = url
 
-	err = a.db.StoreImage(ctx, &image)
+	err = a.dbImage.StoreImage(ctx, &image)
 	if err != nil {
 		a.cdn.DeleteFile(ctx, image.Uuid)
 		w.WriteHeader(http.StatusBadRequest)
@@ -127,7 +129,7 @@ func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	err = a.db.DeleteImage(ctx, vars["uuid"])
+	err = a.dbImage.DeleteImage(ctx, vars["uuid"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image in the mongodb. Here is the error value:", core.Errconv(err)})
@@ -159,7 +161,7 @@ func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	err = a.db.UpdateImage(ctx, &image)
+	err = a.dbImage.UpdateImage(ctx, &image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to update the image in mongodb. Here is the error value:", core.Errconv(err)})

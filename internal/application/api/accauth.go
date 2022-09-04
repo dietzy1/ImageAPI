@@ -40,7 +40,7 @@ func (a Application) Signup(ctx context.Context, w http.ResponseWriter, r *http.
 		return
 	}
 	//issue with the databasedriver
-	err = a.dbauth.Signup(ctx, creds)
+	err = a.dbAccAuth.Signup(ctx, creds)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode("Unable to add image while parsing")
@@ -59,7 +59,7 @@ func (a Application) Signin(ctx context.Context, w http.ResponseWriter, r *http.
 		Username:     r.Form.Get("username"),
 		Passwordhash: r.Form.Get("password"),
 	}
-	storedCreds, err := a.dbauth.Signin(ctx, creds.Username)
+	storedCreds, err := a.dbAccAuth.Signin(ctx, creds.Username)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to authenticate user")
@@ -164,7 +164,7 @@ func (a Application) DeleteAccount(ctx context.Context, w http.ResponseWriter, r
 		_ = json.NewEncoder(w).Encode("Session does not exist in redis db")
 		return
 	}
-	err = a.dbauth.DeleteAccount(ctx, username)
+	err = a.dbAccAuth.DeleteAccount(ctx, username)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode("Unable to delete account in the database")

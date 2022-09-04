@@ -27,7 +27,7 @@ func (a Application) UpdateKey(ctx context.Context, w http.ResponseWriter, r *ht
 	}
 	newKey := core.GenerateAPIKey()
 
-	err = a.dbauth.StoreKey(ctx, newKey, username)
+	err = a.dbKeyAuth.StoreKey(ctx, newKey, username)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode("Unable to add key to database")
@@ -50,7 +50,7 @@ func (a Application) DeleteKey(ctx context.Context, w http.ResponseWriter, r *ht
 		return
 	}
 
-	err = a.dbauth.DeleteKey(ctx, username)
+	err = a.dbKeyAuth.DeleteKey(ctx, username)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Unable to delete key")
@@ -76,7 +76,7 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 	if err == nil {
 		return true
 	}
-	result, ok := a.dbauth.AuthenticateKey(ctx, key)
+	result, ok := a.dbKeyAuth.AuthenticateKey(ctx, key)
 	if !ok {
 		w.WriteHeader(http.StatusForbidden)
 		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
@@ -105,7 +105,7 @@ func (a Application) ShowKey(ctx context.Context, w http.ResponseWriter, r *http
 		_ = json.NewEncoder(w).Encode("Unable to get username from session")
 		return
 	}
-	key, err := a.dbauth.GetKey(ctx, username)
+	key, err := a.dbKeyAuth.GetKey(ctx, username)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode("Unable to get key from database")

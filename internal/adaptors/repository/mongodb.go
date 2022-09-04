@@ -153,17 +153,7 @@ func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
 	return nil
 }
 
-/* func randomize(images []core.Image) *core.Image {
-	if len(images) == 0 {
-		return nil
-	}
-	rand.Seed(time.Now().UnixNano())
-	randomIndex := rand.Intn(len(images))
-	image := images[randomIndex]
-	return &image
-} */
-
-// Must randomize the images based on the quantity
+// randomizes the images based on the quantity
 func randomizeArray(images []core.Image, quantity int) []core.Image {
 	if len(images) == 0 {
 		return nil

@@ -9,7 +9,7 @@ import (
 //Potentially move the ports into the database folder
 
 // implement the mongodb interface methods
-type DbPort interface {
+type DbImagePort interface {
 	FindImage(ctx context.Context, querytype string, query string) (*core.Image, error)
 	FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error)
 	StoreImage(ctx context.Context, image *core.Image) error
@@ -17,12 +17,14 @@ type DbPort interface {
 	DeleteImage(ctx context.Context, uuid string) error
 }
 
-// Need to implement mongodb methods on this interface
-type DbAuthenticationPort interface {
+type DbKeyAuthPort interface {
 	StoreKey(ctx context.Context, newKey string, username string) error
 	DeleteKey(ctx context.Context, username string) error
 	AuthenticateKey(ctx context.Context, key string) (string, bool)
 	GetKey(ctx context.Context, userrname string) (string, error)
+}
+
+type DbAccAuthPort interface {
 	Signup(ctx context.Context, creds core.Credentials) error
 	Signin(ctx context.Context, username string) (core.Credentials, error)
 	DeleteAccount(ctx context.Context, username string) error

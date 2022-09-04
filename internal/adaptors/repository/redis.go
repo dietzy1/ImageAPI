@@ -8,7 +8,6 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// Need to implement redis cloud based client
 func NewRedisAdapter() (*DbAdapter, error) {
 	otp, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {

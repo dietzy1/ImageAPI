@@ -14,7 +14,7 @@ import (
 )
 
 type mongomock struct {
-	mongoClient ports.DbPort
+	mongoClient ports.DbImagePort
 }
 
 func newMongoMock() *mongomock {

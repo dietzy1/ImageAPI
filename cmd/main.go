@@ -32,15 +32,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	//Cdn adapter
-	filedb, err := filerepository.NewImageKitClientAdapter()
-	fmt.Println("File adapter initialized: ", filedb)
+	cdn, err := filerepository.NewImageKitClientAdapter()
+	fmt.Println("File adapter initialized: ", cdn)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	//Application //internal/application/api
-	applicationAPI := api.NewApplication(mongodb, mongodb, filedb, redisdb)
+	applicationAPI := api.NewApplication(mongodb, mongodb, mongodb, redisdb, cdn)
 	fmt.Println("API adapter initialized: ", applicationAPI)
 
 	//serverAdapter - //internal/server
