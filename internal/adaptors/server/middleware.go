@@ -11,7 +11,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// API key authentication middleware
+//This file contains middleware functions and ratelimiting
+
+// API key authentication middleware //Calls application logic which performs a cached redis databasecall and if that fails it performs a mongodb database call for authentication.
 func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -23,7 +25,7 @@ func (s *ServerAdapter) authenticateKey(next http.Handler) http.Handler {
 	})
 }
 
-// Logging middleware
+// Logging middleware // Logs IP address of client, what method the request is and the URL path
 func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
@@ -31,7 +33,7 @@ func (s *ServerAdapter) loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
+// Apply CORS headers // Allow-origin is set to wildcard so the API is fully exposed to all potential client routes.
 func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -44,7 +46,8 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Apply CORS headers //IDK what the fuck this actually does but its needed to load images on javascript front
+// Applies CORS headers // allow origin must be set to the frontend route of the application.
+// allow credentials must be true to pass along the session credentials in the cookie.
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "https://pepe-api.vercel.app")

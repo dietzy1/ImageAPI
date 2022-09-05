@@ -7,7 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// Needs to find the field in the collection and update it
+//Mongodb implementation
+//Implements methods on the port: type DbKeyAuthPort interface
+//This file is responcible for the base layer of database operations related to API-keys.
+
+// Updates a API key value in the credentials database.
 func (a *DbAdapter) StoreKey(ctx context.Context, newKey string, username string) error {
 	collection := a.client.Database("Credential-Database").Collection("Credentials")
 	filter := bson.D{{Key: "username", Value: username}}
@@ -19,6 +23,7 @@ func (a *DbAdapter) StoreKey(ctx context.Context, newKey string, username string
 	return nil
 }
 
+// Checks the credentials database if the submitted key is valid.
 func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) (string, bool) {
 	collection := a.client.Database("Credential-Database").Collection("Credentials")
 	//Check if the key is in the database if not return false
@@ -30,6 +35,7 @@ func (a *DbAdapter) AuthenticateKey(ctx context.Context, key string) (string, bo
 	return cred.Username, true
 }
 
+// Sets the key field to empty string in the credentials database.
 func (a *DbAdapter) DeleteKey(ctx context.Context, username string) error {
 	collection := a.client.Database("Credential-Database").Collection("Credentials")
 	filter := bson.D{{Key: "username", Value: username}}
@@ -41,6 +47,7 @@ func (a *DbAdapter) DeleteKey(ctx context.Context, username string) error {
 	return nil
 }
 
+// Retrrieves a key from the credentials database based on username input.
 func (a *DbAdapter) GetKey(ctx context.Context, username string) (string, error) {
 	collection := a.client.Database("Credential-Database").Collection("Credentials")
 	cred := core.Credentials{}
@@ -49,33 +56,4 @@ func (a *DbAdapter) GetKey(ctx context.Context, username string) (string, error)
 		return "", err
 	}
 	return cred.Key, nil
-}
-
-func (a *DbAdapter) Signup(ctx context.Context, creds core.Credentials) error {
-	collection := a.client.Database("Credential-Database").Collection("Credentials")
-	_, err := collection.InsertOne(ctx, creds)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *DbAdapter) Signin(ctx context.Context, username string) (core.Credentials, error) {
-	collection := a.client.Database("Credential-Database").Collection("Credentials")
-	var cred core.Credentials
-	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&cred)
-	if err != nil {
-		return cred, err
-	}
-	return cred, nil
-}
-
-// Might need to reconfigure this in a better way later
-func (a *DbAdapter) DeleteAccount(ctx context.Context, username string) error {
-	collection := a.client.Database("Credential-Database").Collection("Credentials")
-	result := collection.FindOneAndDelete(ctx, username)
-	if result.Err() != nil {
-		return result.Err()
-	}
-	return nil
 }

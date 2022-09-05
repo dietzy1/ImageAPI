@@ -16,7 +16,11 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// Implements the db port interface and dbApiKey interface
+//Mongodb implementation
+//Implements methods on the port: type DbImagePort interface
+//This file is responcible for all CRUD operations for storing image object json data.
+
+// This is the main struct that contains all database related methods
 type DbAdapter struct {
 	client      *mongo.Client
 	redisClient *redis.Client
@@ -36,10 +40,10 @@ func NewMongoAdapter() (*DbAdapter, error) {
 	}
 	a := &DbAdapter{client: client}
 	//Hard coded index
-	/* 	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
-	   	a.NewIndex("Image-Database", "images", "uuid", false)
-	   	a.NewIndex("Credential-Database", "credentials", "key", false)
-	   	a.NewIndex("Credential-Database", "credentials", "username", false) */
+	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
+	a.NewIndex("Image-Database", "images", "uuid", false)
+	a.NewIndex("Credential-Database", "credentials", "key", false)
+	a.NewIndex("Credential-Database", "credentials", "username", false)
 	return a, nil
 }
 
@@ -63,6 +67,7 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 
 }
 
+// Performs either a random or specific uuid query against the database for an image object. Returns a single object.
 func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query string) (*core.Image, error) {
 	collection := a.client.Database("Image-Database").Collection("images")
 	// can accept uuid or random
@@ -88,6 +93,7 @@ func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query strin
 	return nil, nil
 }
 
+// Performs either a random query or a query by tags against the database. If multiple tags are provided then only images that adhere to all tags are returned. Returns an array of multiple objects based on quantity provided.
 func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
 	collection := a.client.Database("Image-Database").Collection("images")
 	//Can accept tags or random
@@ -126,6 +132,7 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 	return images, nil
 }
 
+// Stores an image object in the database -- does not contain the image itself but the filepath its hosted CDN position.
 func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.InsertOne(ctx, image)
@@ -135,6 +142,7 @@ func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 	return nil
 }
 
+// Updates an image object in the database
 func (a *DbAdapter) UpdateImage(ctx context.Context, image *core.Image) error {
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.UpdateOne(ctx, bson.M{"uuid": image.Uuid}, bson.M{"$set": image})
@@ -144,6 +152,7 @@ func (a *DbAdapter) UpdateImage(ctx context.Context, image *core.Image) error {
 	return nil
 }
 
+// Deletes an image object in the database
 func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
 	collection := a.client.Database("Image-Database").Collection("images")
 	_, err := collection.DeleteOne(ctx, bson.M{"uuid": uuid})

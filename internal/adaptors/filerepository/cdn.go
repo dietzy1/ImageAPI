@@ -19,10 +19,15 @@ import (
 	"github.com/imagekit-developer/imagekit-go/api/uploader"
 )
 
+//Imagekit client implementation
+//Imlements methods on the port type CdnPort interface
+//This file is responcible for crud operations for storing the file bytes itself at the imagekit CDN.
+
 type FileAdapter struct {
 	client *imagekit.ImageKit
 }
 
+// Opens a new imagekit client and reads in the ENV vars needed.
 func NewImageKitClientAdapter() (*FileAdapter, error) {
 
 	client := imagekit.NewFromParams(imagekit.NewParams{
@@ -34,6 +39,7 @@ func NewImageKitClientAdapter() (*FileAdapter, error) {
 	return a, nil
 }
 
+// sends a POST http request that stores the image bytes with a path of uuid.jpg at the CDN.
 func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *bytes.Buffer) (string, error) {
 	tags := strings.Join(image.Tags, ",")
 	tags = strings.TrimSpace(tags)
@@ -54,6 +60,7 @@ func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *byt
 	return res.Data.Url, nil
 }
 
+// Sends a DELETE http request that deletes the image bytes at the CDN.
 func (f *FileAdapter) DeleteFile(ctx context.Context, uuid string) error {
 	fileid, err := f.GetFile(ctx, uuid)
 	if err != nil {
@@ -66,6 +73,7 @@ func (f *FileAdapter) DeleteFile(ctx context.Context, uuid string) error {
 	return nil
 }
 
+// helper function to enable deletefile and update file. Sends a GET request that locates the image bytes at the CDN.
 func (f *FileAdapter) GetFile(ctx context.Context, uuid string) (string, error) {
 	query := fmt.Sprintf(`name = "%s"`, uuid+".jpg")
 	res, err := f.client.Media.Files(ctx, media.FilesParam{
@@ -78,6 +86,7 @@ func (f *FileAdapter) GetFile(ctx context.Context, uuid string) (string, error) 
 	return res.Data[0].FileId, nil
 }
 
+// Sends a PATCH http request that updates the image meta data at the CDN.
 func (f *FileAdapter) UpdateFile(ctx context.Context, image core.Image) error {
 	fileid, err := f.GetFile(ctx, image.Uuid)
 	if err != nil {
@@ -92,6 +101,7 @@ func (f *FileAdapter) UpdateFile(ctx context.Context, image core.Image) error {
 	return nil
 }
 
+// Hack to circumvent poor client library implementation.
 func newFalse() *bool {
 	b := false
 	return &b

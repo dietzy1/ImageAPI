@@ -12,7 +12,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Implements the Api port methods
+//This file contains the main Application struct
+//This file is responcible for delegating the main CRUD API operations to the database layer and returning http responses.
+//Implements methods on the type ApiPort interface.
+//All of these methods are called from the handlers layer.
+
 type Application struct {
 	dbImage   ports.DbImagePort
 	dbAccAuth ports.DbAccAuthPort
@@ -29,7 +33,7 @@ func NewApplication(dbImage ports.DbImagePort, dbAccAuth ports.DbAccAuthPort, db
 	return &Application{dbImage: dbImage, dbAccAuth: dbAccAuth, dbKeyAuth: dbKeyAuth, cdn: cdn, session: session}
 }
 
-// Implements methods on the APi port
+// Returns a single image based on query parameters from the database.
 func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string) {
 	image, err := a.dbImage.FindImage(ctx, querytype, query)
 	if err != nil {
@@ -46,7 +50,7 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 	json.NewEncoder(w).Encode(image)
 }
 
-// Implements methods on the APi port
+// Returns multiple images based on query parameters from the database.
 func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int) {
 	images, err := a.dbImage.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
@@ -63,7 +67,7 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 	json.NewEncoder(w).Encode(images)
 }
 
-// Need to implement role
+// Adds a single image CDN and the image meta data to database. Simple verification and image convertion is done aswell.
 func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -119,7 +123,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	json.NewEncoder(w).Encode(image)
 }
 
-// Implements methods on the APi port
+// Deletes an image from the CDN and database.
 func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	err := a.cdn.DeleteFile(ctx, vars["uuid"])
@@ -139,7 +143,7 @@ func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 }
 
-// Implements methods on the APi port
+// Updates image metadata in the CDN and database. Simple verification is done aswell.
 func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {

@@ -73,11 +73,12 @@ func (i *Image) NewUUID() string {
 	return uuid.New().String()
 }
 
-// can add a generic method for setting time
+// Returns time.now as a string in the format RFC1123
 func (i *Image) SetTime() string {
 	return time.Now().Format("RFC1123")
 }
 
+// Generates a custom API key.
 func GenerateAPIKey() string {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
