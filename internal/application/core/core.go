@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"crypto/rand"
 	"errors"
 	"fmt"
@@ -16,7 +17,16 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/google/uuid"
+	"github.com/vitali-fedulov/imagehash"
+	"github.com/vitali-fedulov/images4"
 	"golang.org/x/crypto/bcrypt"
+)
+
+// Used for image comparison
+const (
+	// Recommended hyper-space parameters for initial trials.
+	epsPct     = 0.25
+	numBuckets = 4
 )
 
 type Image struct {
@@ -25,6 +35,8 @@ type Image struct {
 	Tags       []string `json:"tags" bson:"tags"`
 	Created_At string   `json:"created_at" bson:"created_at"`
 	Filepath   string   `json:"filepath" bson:"filepath"`
+	Filesize   int64    `json:"filesize" bson:"filesize"`
+	Hash       uint64   `json:"hashset" bson:"hashset"`
 }
 
 type Credentials struct {
@@ -45,8 +57,41 @@ func (i Image) Validate(image Image) error {
 		fmt.Println("returning tags")
 		return errors.New("empty tags")
 	}
-
 	return nil
+}
+
+// Skip error handling to improve code structure
+// Hashes the image and returns the hash // HashSet is the image that is being queried against the centralHashes
+func (i Image) HashSet(buf *bytes.Buffer) uint64 {
+	img, _, err := image.Decode(buf)
+	if err != nil {
+		return 0
+	}
+	icon := images4.Icon(img)
+
+	return imagehash.HashSet(
+		icon, imagehash.HyperPoints10, epsPct, numBuckets)[0]
+}
+
+// Hashes the image and returns the hash //CentralHash is all prior images that are being compared against
+func (i Image) CentralHash(buf *bytes.Buffer) (uint64, error) {
+	img, _, err := image.Decode(buf)
+	if err != nil {
+		return 0, err
+	}
+	icon := images4.Icon(img)
+
+	return imagehash.CentralHash(
+		icon, imagehash.HyperPoints10, epsPct, numBuckets), nil
+}
+
+func (i Image) FileSize(buf *bytes.Buffer) int64 {
+	return int64(buf.Len())
+}
+
+// spawn 5 goroutines to use the function CompareImage
+func batchProcess(image []Image) (*Image, bool) {
+	return nil, true
 }
 
 // Simple validation againt the credentials struct that checks if username, password and key are empty strings

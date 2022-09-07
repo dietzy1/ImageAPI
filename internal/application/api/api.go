@@ -76,13 +76,12 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		return
 	}
 
-	image := core.Image{
-		Name:       r.Form.Get("name"),
-		Uuid:       a.image.NewUUID(),
-		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
-		Created_At: a.image.SetTime(),
-	}
 	file, _, err := r.FormFile("file")
+	if file == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to parse the file. Here is the error value:", core.Errconv(err)})
+		return
+	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to parse file data. Here is the error value:", core.Errconv(err)})
@@ -97,11 +96,49 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		_ = json.NewEncoder(w).Encode([]any{"Unable to convert file to jpg. Here is the error value:", core.Errconv(err)})
 		return
 	}
+
+	image := core.Image{
+		Name:       r.Form.Get("name"),
+		Uuid:       a.image.NewUUID(),
+		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
+		Created_At: a.image.SetTime(),
+		Filesize:   a.image.FileSize(buf),
+		Hash:       a.image.HashSet(buf),
+	}
+
 	err = image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
 		return
+	}
+
+	//Logic for checking if the image already exists in the database.
+	if r.URL.Query().Get("skip") != "true" {
+		images, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images. Here is the error value:", core.Errconv(err)})
+			return
+		}
+		centralhash, err := a.image.CentralHash(buf)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve central hash of image. Here is the error value:", core.Errconv(err)})
+			return
+		}
+
+		//Implement the batch processing here
+		//Temporary comparison solution
+
+		for _, v := range images {
+			if centralhash == v.Hash {
+				w.WriteHeader(http.StatusBadRequest)
+				_ = json.NewEncoder(w).Encode([]any{"Image potentially already exists in the fdatabase, set the query parameter skip to true to skip this logic check. The uuid of the image is:", v.Uuid})
+				return
+			}
+		}
+		//end of skip control group
 	}
 
 	url, err := a.cdn.UploadFile(ctx, image, buf)

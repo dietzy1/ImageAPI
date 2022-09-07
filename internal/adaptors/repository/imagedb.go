@@ -96,7 +96,7 @@ func (a *DbAdapter) FindImage(ctx context.Context, querytype string, query strin
 // Performs either a random query or a query by tags against the database. If multiple tags are provided then only images that adhere to all tags are returned. Returns an array of multiple objects based on quantity provided.
 func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []string, quantity int) ([]core.Image, error) {
 	collection := a.client.Database("Image-Database").Collection("images")
-	//Can accept tags or random
+	//Can accept tags, hash or random
 	images := []core.Image{}
 
 	switch querytype {
@@ -121,6 +121,20 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 		images = randomizeArray(images, quantity)
 	case "random":
 		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": quantity}}})
+		if err != nil {
+			return nil, err
+		}
+		if err = cursor.All(ctx, &images); err != nil {
+			return nil, err
+		}
+	case "hash":
+		//Only returns uuid and hash value to the slice
+		projection := bson.D{
+			{Key: "hash", Value: 1},
+			{Key: "uuid", Value: 1},
+			{Key: "_id", Value: 0},
+		}
+		cursor, err := collection.Find(ctx, bson.D{{}}, options.Find().SetProjection(projection))
 		if err != nil {
 			return nil, err
 		}
