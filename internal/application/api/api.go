@@ -106,8 +106,8 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		Uuid:       a.image.NewUUID(),
 		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
 		Created_At: a.image.SetTime(),
-		/* Filesize:   a.image.FileSize(buf),
-		Hash:       a.image.HashSet(buf), */
+		Filesize:   a.image.FileSize(buf),
+		Hash:       a.image.HashSet(buf),
 	}
 
 	err = image.Validate(image)
