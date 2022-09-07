@@ -114,11 +114,11 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 
 	//Logic for checking if the image already exists in the database.
-	if r.URL.Query().Get("skip") != "true" {
+	if r.URL.Query().Get("skip") == "" {
 		images, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images. Here is the error value:", core.Errconv(err)})
+			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images from db. Here is the error value:", core.Errconv(err)})
 			return
 		}
 		centralhash, err := a.image.CentralHash(buf)
