@@ -106,8 +106,8 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		Uuid:       a.image.NewUUID(),
 		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
 		Created_At: a.image.SetTime(),
-		Filesize:   a.image.FileSize(buf),
-		Hash:       a.image.HashSet(buf),
+		Filesize:   a.image.FileSize(*buf),
+		Hash:       a.image.HashSet(*buf),
 	}
 
 	err = image.Validate(image)
@@ -119,7 +119,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 
 	//Logic for checking if the image already exists in the database.
-	/* if r.Form.Get("skip") == "" {
+	if r.Form.Get("skip") == "" {
 		images, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -127,7 +127,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images from db. Here is the error value:", core.Errconv(err)})
 			return
 		}
-		centralhash, err := a.image.CentralHash(buf)
+		centralhash, err := a.image.CentralHash(*buf)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("6")
@@ -148,15 +148,14 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		}
 		//end of skip control group
 	}
-	*/
-	url, err := a.cdn.UploadFile(ctx, image, buf)
+
+	url, err := a.cdn.UploadFile(ctx, image, *buf)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("8")
 		_ = json.NewEncoder(w).Encode([]any{"Unable to upload file to cdn. Here is the error value:", core.Errconv(err)})
 		return
 	}
-
 	image.Filepath = url
 
 	err = a.dbImage.StoreImage(ctx, &image)

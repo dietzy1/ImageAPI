@@ -64,8 +64,8 @@ func (i Image) Validate(image Image) error {
 
 // Skip error handling to improve code structure
 // Hashes the image and returns the hash // HashSet is the image that is being queried against the centralHashes
-func (i Image) HashSet(buf *bytes.Buffer) uint64 {
-	img, _, err := image.Decode(buf)
+func (i Image) HashSet(buf bytes.Buffer) uint64 {
+	img, _, err := image.Decode(&buf)
 	if err != nil {
 		return 0
 	}
@@ -76,8 +76,8 @@ func (i Image) HashSet(buf *bytes.Buffer) uint64 {
 }
 
 // Hashes the image and returns the hash //CentralHash is all prior images that are being compared against
-func (i Image) CentralHash(buf *bytes.Buffer) (uint64, error) {
-	img, _, err := image.Decode(buf)
+func (i Image) CentralHash(buf bytes.Buffer) (uint64, error) {
+	img, _, err := image.Decode(&buf)
 	if err != nil {
 		return 0, err
 	}
@@ -87,14 +87,14 @@ func (i Image) CentralHash(buf *bytes.Buffer) (uint64, error) {
 		icon, imagehash.HyperPoints10, epsPct, numBuckets), nil
 }
 
-func (i Image) FileSize(buf *bytes.Buffer) int64 {
+func (i Image) FileSize(buf bytes.Buffer) int64 {
 	return int64(buf.Len())
 }
 
 // spawn 5 goroutines to use the function CompareImage
-func batchProcess(image []Image) (*Image, bool) {
+/* func batchProcess(image []Image) (*Image, bool) {
 	return nil, true
-}
+} */
 
 // Simple validation againt the credentials struct that checks if username, password and key are empty strings
 func (c Credentials) Validate(crreds Credentials) error {

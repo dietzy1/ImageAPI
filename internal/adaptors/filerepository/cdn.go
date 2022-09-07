@@ -40,7 +40,7 @@ func NewImageKitClientAdapter() (*FileAdapter, error) {
 }
 
 // sends a POST http request that stores the image bytes with a path of uuid.jpg at the CDN.
-func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *bytes.Buffer) (string, error) {
+func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf bytes.Buffer) (string, error) {
 	tags := strings.Join(image.Tags, ",")
 	tags = strings.TrimSpace(tags)
 
@@ -52,7 +52,7 @@ func (f *FileAdapter) UploadFile(ctx context.Context, image core.Image, buf *byt
 		IsPrivateFile:     newFalse(),
 		ResponseFields:    "filepath",
 	}
-	res, err := f.client.Uploader.Upload(ctx, io.ByteReader(buf), params)
+	res, err := f.client.Uploader.Upload(ctx, io.ByteReader(&buf), params)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
