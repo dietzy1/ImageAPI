@@ -42,6 +42,9 @@ func NewMongoAdapter() (*DbAdapter, error) {
 	//Hard coded index
 	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
 	a.NewIndex("Image-Database", "images", "uuid", false)
+	a.NewIndex("Image-Database", "images", "title", false)
+	a.NewIndex("Image-Database", "images", "hash", false)
+
 	a.NewIndex("Credential-Database", "credentials", "key", false)
 	a.NewIndex("Credential-Database", "credentials", "username", false)
 	return a, nil
@@ -142,7 +145,6 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 			return nil, err
 		}
 	}
-
 	return images, nil
 }
 

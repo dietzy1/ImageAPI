@@ -83,12 +83,15 @@ func Router(s *ServerAdapter) {
 	sb.HandleFunc("/image/random/", s.findImageRandom).Queries("key", "{key}").Methods(http.MethodGet)
 
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         "0.0.0.0:" + os.Getenv("PORT"), //Required addr for railway.app deployment.
+		Handler: r,
+		//Addr:         "0.0.0.0:" + os.Getenv("PORT"), //Required addr for railway.app deployment.
+		Addr: os.Getenv("ADDR") + os.Getenv("PORT"), //Required addr for railway.app deployment.
+		//Addr:         "localhost:8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
+
 	//rl := rateLimiting{}
 	//Instantiate garbage collection of the cooldowns map
 	//go rl.gc()

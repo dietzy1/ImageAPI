@@ -15,10 +15,19 @@ import (
 
 // Constructor
 func NewRedisAdapter() (*DbAdapter, error) {
+
 	otp, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
 		panic(err)
 	}
+	/* otp := &redis.Options{
+		Username: os.Getenv("REDIS_USERNAME"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     os.Getenv("REDIS_URL"),
+		DB:       0,
+		Dialer:   nil,
+	} */
+
 	redisClient := redis.NewClient(otp)
 
 	if _, err := redisClient.Ping(context.Background()).Result(); err != nil {

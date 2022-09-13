@@ -9,8 +9,6 @@ import (
 	_ "image/gif"
 	"image/jpeg"
 
-	_ "image/jpeg"
-
 	_ "image/png"
 	"io"
 	"strings"
@@ -19,26 +17,25 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/google/uuid"
-	"github.com/vitali-fedulov/imagehash"
 	"github.com/vitali-fedulov/images4"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Used for image comparison
-const (
+/* const (
 	// Recommended hyper-space parameters for initial trials.
 	epsPct     = 0.25
 	numBuckets = 4
-)
+) */
 
 type Image struct {
-	Name       string   `json:"name" bson:"name"`
-	Uuid       string   `json:"uuid" bson:"uuid"`
-	Tags       []string `json:"tags" bson:"tags"`
-	Created_At string   `json:"created_at" bson:"created_at"`
-	Filepath   string   `json:"filepath" bson:"filepath"`
-	Filesize   int64    `json:"filesize" bson:"filesize"`
-	Hash       uint64   `json:"hashset" bson:"hashset"`
+	Title      string        `json:"title" bson:"title"`
+	Uuid       string        `json:"uuid" bson:"uuid"`
+	Tags       []string      `json:"tags" bson:"tags"`
+	Created_At string        `json:"created_at" bson:"created_at"`
+	Filepath   string        `json:"filepath" bson:"filepath"`
+	Filesize   int64         `json:"filesize" bson:"filesize"`
+	Hash       images4.IconT `json:"hash" bson:"hash"`
 }
 
 type Credentials struct {
@@ -51,7 +48,7 @@ type Credentials struct {
 
 // Simple validation againt the image struct that checks if name and tags are empty
 func (i Image) Validate(image Image) error {
-	if i.Name == "" {
+	if i.Title == "" {
 		fmt.Println("returning name")
 		return errors.New("empty name")
 	}
@@ -62,29 +59,12 @@ func (i Image) Validate(image Image) error {
 	return nil
 }
 
-// Skip error handling to improve code structure
-// Hashes the image and returns the hash // HashSet is the image that is being queried against the centralHashes
-func (i Image) HashSet(buf bytes.Buffer) uint64 {
+func (i Image) HashSet(buf bytes.Buffer) images4.IconT {
 	img, _, err := image.Decode(&buf)
 	if err != nil {
-		return 0
+		fmt.Println("Error decoding image")
 	}
-	icon := images4.Icon(img)
-
-	return imagehash.HashSet(
-		icon, imagehash.HyperPoints10, epsPct, numBuckets)[0]
-}
-
-// Hashes the image and returns the hash //CentralHash is all prior images that are being compared against
-func (i Image) CentralHash(buf bytes.Buffer) (uint64, error) {
-	img, _, err := image.Decode(&buf)
-	if err != nil {
-		return 0, err
-	}
-	icon := images4.Icon(img)
-
-	return imagehash.CentralHash(
-		icon, imagehash.HyperPoints10, epsPct, numBuckets), nil
+	return images4.Icon(img)
 }
 
 func (i Image) FileSize(buf bytes.Buffer) int64 {
@@ -122,7 +102,7 @@ func (i *Image) NewUUID() string {
 
 // Returns time.now as a string in the format RFC1123
 func (i *Image) SetTime() string {
-	return time.Now().Format("RFC1123")
+	return time.Now().Format(time.RFC1123)
 }
 
 // Generates a custom API key.

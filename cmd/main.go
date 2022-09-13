@@ -11,13 +11,13 @@ import (
 	"github.com/dietzy1/imageAPI/internal/adaptors/server"
 
 	//config
-	//"github.com/dietzy1/imageAPI/internal/config"
 
 	//Application
 	"github.com/dietzy1/imageAPI/internal/application/api"
 )
 
 func main() {
+	//config.Env()
 
 	//Database adapter
 	redisdb, err := repository.NewRedisAdapter()

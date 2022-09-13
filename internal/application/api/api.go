@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 	"github.com/dietzy1/imageAPI/internal/ports"
+	"github.com/vitali-fedulov/images4"
 
 	"github.com/gorilla/mux"
 )
@@ -78,15 +78,9 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 
 	file, _, err := r.FormFile("file")
-	if file == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("1")
-		_ = json.NewEncoder(w).Encode([]any{"Unable to parse the file. Here is the error value:", core.Errconv(err)})
-		return
-	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("2")
+
 		_ = json.NewEncoder(w).Encode([]any{"Unable to parse file data. Here is the error value:", core.Errconv(err)})
 		return
 	}
@@ -96,13 +90,13 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	err = core.ConvertToJPEG(buf, file)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("3")
+
 		_ = json.NewEncoder(w).Encode([]any{"Unable to convert file to jpg. Here is the error value:", core.Errconv(err)})
 		return
 	}
 
 	image := core.Image{
-		Name:       r.Form.Get("name"),
+		Title:      r.Form.Get("title"),
 		Uuid:       a.image.NewUUID(),
 		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
 		Created_At: a.image.SetTime(),
@@ -113,46 +107,34 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	err = image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("4")
+
 		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
 		return
 	}
 
 	//Logic for checking if the image already exists in the database.
 	if r.Form.Get("skip") == "" {
-		images, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
+		hashImages, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("5")
 			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images from db. Here is the error value:", core.Errconv(err)})
-			return
-		}
-		centralhash, err := a.image.CentralHash(*buf)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("6")
-			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve central hash of image. Here is the error value:", core.Errconv(err)})
-			return
 		}
 
 		//Implement the batch processing here
-		//Temporary comparison solution
 
-		for _, v := range images {
-			if centralhash == v.Hash {
+		//Temporary comparison solution
+		for _, v := range hashImages {
+			if images4.Similar(v.Hash, image.Hash) {
 				w.WriteHeader(http.StatusBadRequest)
-				log.Printf("7")
-				_ = json.NewEncoder(w).Encode([]any{"Image potentially already exists in the fdatabase, set the query parameter skip to true to skip this logic check. The uuid of the image is:", v.Uuid})
+				_ = json.NewEncoder(w).Encode([]any{"Image potentially already exists in the database, set the query parameter skip to true to skip this logic check. The uuid of the image is:", v.Uuid})
 				return
 			}
 		}
-		//end of skip control group
 	}
 
 	url, err := a.cdn.UploadFile(ctx, image, *buf)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("8")
+
 		_ = json.NewEncoder(w).Encode([]any{"Unable to upload file to cdn. Here is the error value:", core.Errconv(err)})
 		return
 	}
@@ -162,7 +144,7 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	if err != nil {
 		a.cdn.DeleteFile(ctx, image.Uuid)
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("9")
+
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
@@ -200,7 +182,7 @@ func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	image := core.Image{
-		Name:       r.Form.Get("name"),
+		Title:      r.Form.Get("title"),
 		Uuid:       r.Form.Get("uuid"),
 		Tags:       core.Split(r.Form.Get("tags")),
 		Created_At: a.image.SetTime(),
