@@ -8,6 +8,7 @@ import (
 	"image"
 	_ "image/gif"
 	"image/jpeg"
+	"log"
 
 	_ "image/png"
 	"io"
@@ -20,13 +21,6 @@ import (
 	"github.com/vitali-fedulov/images4"
 	"golang.org/x/crypto/bcrypt"
 )
-
-// Used for image comparison
-/* const (
-	// Recommended hyper-space parameters for initial trials.
-	epsPct     = 0.25
-	numBuckets = 4
-) */
 
 type Image struct {
 	Title      string        `json:"title" bson:"title"`
@@ -59,10 +53,11 @@ func (i Image) Validate(image Image) error {
 	return nil
 }
 
+// Decodes an image an returns the hash
 func (i Image) HashSet(buf bytes.Buffer) images4.IconT {
 	img, _, err := image.Decode(&buf)
 	if err != nil {
-		fmt.Println("Error decoding image")
+		log.Println("Error decoding image")
 	}
 	return images4.Icon(img)
 }
@@ -70,11 +65,6 @@ func (i Image) HashSet(buf bytes.Buffer) images4.IconT {
 func (i Image) FileSize(buf bytes.Buffer) int64 {
 	return int64(buf.Len())
 }
-
-// spawn 5 goroutines to use the function CompareImage
-/* func batchProcess(image []Image) (*Image, bool) {
-	return nil, true
-} */
 
 // Simple validation againt the credentials struct that checks if username, password and key are empty strings
 func (c Credentials) Validate(crreds Credentials) error {

@@ -1,5 +1,5 @@
 image-folder
-config
+.env
 
 dump.rdb
 

@@ -112,7 +112,6 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		return
 	}
 
-	//Logic for checking if the image already exists in the database.
 	if r.Form.Get("skip") == "" {
 		hashImages, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
 		if err != nil {
