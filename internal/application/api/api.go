@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"image"
+	"log"
 	"net/http"
+	"sync"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 	"github.com/dietzy1/imageAPI/internal/ports"
@@ -22,6 +25,7 @@ type Application struct {
 	dbImage   ports.DbImagePort
 	dbAccAuth ports.DbAccAuthPort
 	dbKeyAuth ports.DbKeyAuthPort
+	dbElo     ports.DbEloSystemPort
 	session   ports.SessionPort
 
 	cdn   ports.CdnPort
@@ -30,7 +34,7 @@ type Application struct {
 }
 
 // Constructor
-func NewApplication(dbImage ports.DbImagePort, dbAccAuth ports.DbAccAuthPort, dbKeyAuth ports.DbKeyAuthPort, session ports.SessionPort, cdn ports.CdnPort) *Application {
+func NewApplication(dbImage ports.DbImagePort, dbAccAuth ports.DbAccAuthPort, dbKeyAuth ports.DbKeyAuthPort, dbElo ports.DbEloSystemPort, session ports.SessionPort, cdn ports.CdnPort) *Application {
 	return &Application{dbImage: dbImage, dbAccAuth: dbAccAuth, dbKeyAuth: dbKeyAuth, cdn: cdn, session: session}
 }
 
@@ -39,8 +43,6 @@ func (a Application) FindImage(ctx context.Context, w http.ResponseWriter, r *ht
 	image, err := a.dbImage.FindImage(ctx, querytype, query)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
-
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -56,13 +58,11 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 	images, err := a.dbImage.FindImages(ctx, querytype, query, quantity)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if images == nil {
 		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	json.NewEncoder(w).Encode(images)
@@ -80,7 +80,6 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	file, _, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-
 		_ = json.NewEncoder(w).Encode([]any{"Unable to parse file data. Here is the error value:", core.Errconv(err)})
 		return
 	}
@@ -95,22 +94,29 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		return
 	}
 
+	img, _, err := image.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		log.Println("Error decoding image")
+	}
+
 	image := core.Image{
 		Title:      r.Form.Get("title"),
 		Uuid:       a.image.NewUUID(),
 		Tags:       core.Split(r.Form.Get("tags")), //there is a bug here whitespace is not removed
 		Created_At: a.image.SetTime(),
 		Filesize:   a.image.FileSize(*buf),
-		Hash:       a.image.HashSet(*buf),
+		Hash:       a.image.HashSet(img),
+		Width:      a.image.FindWidth(img),
+		Height:     a.image.FindHeight(img),
+		Elo:        1500,
 	}
+	var wg sync.WaitGroup
 
-	err = image.Validate(image)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-
-		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		image.BlurHash = image.BlurHashing(img)
+	}()
 
 	if r.Form.Get("skip") == "" {
 		hashImages, err := a.dbImage.FindImages(ctx, "hash", nil, 0) //UUID and hash are the only two fields that are returned
@@ -118,26 +124,43 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 			_ = json.NewEncoder(w).Encode([]any{"Unable to retrieve hashes of images from db. Here is the error value:", core.Errconv(err)})
 		}
 
-		//Implement the batch processing here
-
-		//Temporary comparison solution
+		c := make(chan bool, 2)
+		wg.Add(len(hashImages))
 		for _, v := range hashImages {
-			if images4.Similar(v.Hash, image.Hash) {
-				w.WriteHeader(http.StatusBadRequest)
-				_ = json.NewEncoder(w).Encode([]any{"Image potentially already exists in the database, set the query parameter skip to true to skip this logic check. The uuid of the image is:", v.Uuid})
-				return
-			}
+			go func(v core.Image) {
+				defer wg.Done()
+				if images4.Similar(v.Hash, image.Hash) {
+					c <- true
+				}
+			}(v)
 		}
+		recieve := <-c
+		if recieve {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode([]any{"Image already exists in the database. Here is the error value:", core.Errconv(err)})
+			return
+		}
+		wg.Wait()
+		close(c)
+	}
+
+	err = image.Validate(image)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
+		return
 	}
 
 	url, err := a.cdn.UploadFile(ctx, image, *buf)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-
 		_ = json.NewEncoder(w).Encode([]any{"Unable to upload file to cdn. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	image.Filepath = url
+	//Database should not fail so
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(image)
 
 	err = a.dbImage.StoreImage(ctx, &image)
 	if err != nil {
@@ -147,8 +170,6 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		_ = json.NewEncoder(w).Encode("Unable to add image while storing")
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(image)
 }
 
 // Deletes an image from the CDN and database.

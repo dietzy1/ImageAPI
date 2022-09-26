@@ -9,7 +9,7 @@ import (
 
 //Mongodb implementation
 //Implements methods on the port: type DbAccAuthPort interface
-//this file is responcible for database functions that are related to user authentication. 
+//this file is responcible for database functions that are related to user authentication.
 
 // adds a users credentials to the database.
 func (a *DbAdapter) Signup(ctx context.Context, creds core.Credentials) error {

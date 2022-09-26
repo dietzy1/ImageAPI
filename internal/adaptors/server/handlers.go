@@ -76,6 +76,7 @@ func (s *ServerAdapter) addImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.api.AddImage(ctx, w, r)
+
 }
 
 // Entry point for following PUT route:
@@ -177,4 +178,22 @@ func (s *ServerAdapter) deleteAccount(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s.accauth.DeleteAccount(ctx, w, r)
+}
+
+func (s *ServerAdapter) requestMatch(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.elo.RequestMatch(ctx, w, r)
+}
+
+func (s *ServerAdapter) matchResult(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.elo.MatchResult(ctx, w, r)
+}
+
+func (s *ServerAdapter) getLeaderboard(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.elo.GetLeaderboard(ctx, w, r)
 }

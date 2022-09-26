@@ -3,11 +3,12 @@ module github.com/dietzy1/imageAPI
 go 1.18
 
 require (
+	github.com/buckket/go-blurhash v1.1.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/imagekit-developer/imagekit-go v0.0.0-20220802175037-6d3eb2714166
-	github.com/vitali-fedulov/imagehash v1.0.2
+	github.com/joho/godotenv v1.4.0
 	github.com/vitali-fedulov/images4 v1.1.3
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
@@ -21,10 +22,8 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/vitali-fedulov/hyper v1.0.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect

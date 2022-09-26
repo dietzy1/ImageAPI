@@ -19,11 +19,12 @@ type ServerAdapter struct {
 	router  http.Handler
 	accauth ports.AccAuthPort
 	keyauth ports.KeyAuthPort
+	elo     ports.EloSystemPort
 }
 
 // Constructor
-func NewServerAdapter(api ports.ApiPort, accauth ports.AccAuthPort, keyauth ports.KeyAuthPort) *ServerAdapter {
-	return &ServerAdapter{api: api, accauth: accauth, keyauth: keyauth}
+func NewServerAdapter(api ports.ApiPort, accauth ports.AccAuthPort, keyauth ports.KeyAuthPort, elo ports.EloSystemPort) *ServerAdapter {
+	return &ServerAdapter{api: api, accauth: accauth, keyauth: keyauth, elo: elo}
 }
 
 // Wrapper for router object
@@ -81,6 +82,16 @@ func Router(s *ServerAdapter) {
 
 	//Get single random image // The API key should be appended as a query parameter
 	sb.HandleFunc("/image/random/", s.findImageRandom).Queries("key", "{key}").Methods(http.MethodGet)
+
+	//Elo system subrouter routes
+	elo := r.PathPrefix("/elo").Subrouter()
+	elo.Use(s.loggingMiddleware)
+	elo.Use(s.corsMiddlewareCookie)
+	/* elo.Use(s.rateLimitingMiddleware) */
+
+	elo.HandleFunc("/requestmatch/", s.requestMatch).Queries("key", "{key}").Methods(http.MethodPost)
+	elo.HandleFunc("/matchresult/", s.matchResult).Queries("key", "{key}").Methods(http.MethodPost)
+	elo.HandleFunc("/leaderboard/", s.getLeaderboard).Queries("key", "{key}").Methods(http.MethodGet)
 
 	srv := &http.Server{
 		Handler: r,

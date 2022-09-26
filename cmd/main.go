@@ -42,11 +42,11 @@ func main() {
 	}
 
 	//Application //internal/application/api
-	applicationAPI := api.NewApplication(mongodb, mongodb, mongodb, redisdb, cdn)
+	applicationAPI := api.NewApplication(mongodb, mongodb, mongodb, mongodb, redisdb, cdn)
 	fmt.Println("API adapter initialized: ", applicationAPI)
 
 	//serverAdapter - //internal/server
-	serverAdapter := server.NewServerAdapter(applicationAPI, applicationAPI, applicationAPI)
+	serverAdapter := server.NewServerAdapter(applicationAPI, applicationAPI, applicationAPI, applicationAPI)
 	fmt.Println("Server adapter initialized: ", serverAdapter)
 	server.Router(serverAdapter)
 }

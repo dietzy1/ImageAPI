@@ -30,3 +30,9 @@ type KeyAuthPort interface {
 	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
 	ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 }
+
+type EloSystemPort interface {
+	RequestMatch(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	MatchResult(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	GetLeaderboard(ctx context.Context, w http.ResponseWriter, r *http.Request)
+}

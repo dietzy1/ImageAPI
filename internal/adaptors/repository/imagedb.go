@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -42,11 +43,11 @@ func NewMongoAdapter() (*DbAdapter, error) {
 	//Hard coded index
 	a.NewIndex("Image-Database", "images", "tags", false) //Collection name, field, unique
 	a.NewIndex("Image-Database", "images", "uuid", false)
-	a.NewIndex("Image-Database", "images", "title", false)
 	a.NewIndex("Image-Database", "images", "hash", false)
+	a.NewIndex("Image-Database", "images", "elo", false)
 
-	a.NewIndex("Credential-Database", "credentials", "key", false)
-	a.NewIndex("Credential-Database", "credentials", "username", false)
+	a.NewIndex("Credential-Database", "Credentials", "key", false)
+	a.NewIndex("Credential-Database", "Credentials", "username", false)
 	return a, nil
 }
 
@@ -104,6 +105,10 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 
 	switch querytype {
 	case "tags":
+		projection := bson.D{
+			{Key: "_id", Value: 0},
+			{Key: "hash", Value: 0},
+		}
 		var otps bson.D
 		if len(query) == 1 {
 			otps = bson.D{{Key: querytype, Value: query[0]}}
@@ -114,7 +119,7 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 		if len(query) >= 3 {
 			otps = bson.D{{Key: querytype, Value: query[0]}, {Key: querytype, Value: query[1]}, {Key: querytype, Value: query[2]}}
 		}
-		cursor, err := collection.Find(ctx, otps)
+		cursor, err := collection.Find(ctx, otps, options.Find().SetProjection(projection))
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +128,11 @@ func (a *DbAdapter) FindImages(ctx context.Context, querytype string, query []st
 		}
 		images = randomizeArray(images, quantity)
 	case "random":
-		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": quantity}}})
+		projection := bson.D{
+			{Key: "_id", Value: 0},
+			{Key: "hash", Value: 0},
+		}
+		cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": quantity}}, bson.M{"$project": projection}})
 		if err != nil {
 			return nil, err
 		}
@@ -194,4 +203,64 @@ func randomizeArray(images []core.Image, quantity int) []core.Image {
 		randomImages = append(randomImages, images[randomIndexes[i]])
 	}
 	return randomImages
+}
+
+func (a *DbAdapter) GetLeaderBoardImages(ctx context.Context) ([]core.Image, error) {
+	collection := a.client.Database("Image-Database").Collection("images")
+
+	images := []core.Image{}
+	projection := bson.D{
+		{Key: "title", Value: 1},
+		{Key: "uuid", Value: 1},
+		{Key: "tags", Value: 1},
+		{Key: "filepath", Value: 1},
+		{Key: "elo", Value: 1},
+		{Key: "_id", Value: 0},
+	}
+	opts := options.Find().SetSort(bson.D{primitive.E{Key: "elo", Value: -1}}).SetLimit(100).SetProjection(projection)
+
+	cursor, err := collection.Find(ctx, bson.D{{}}, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &images); err != nil {
+		return nil, err
+	}
+	return images, nil
+}
+
+// Choose a random image from the database and then aggregate for another image within a certain threshhold
+func (a *DbAdapter) FindMatch(ctx context.Context) ([]core.Image, error) {
+	collection := a.client.Database("Image-Database").Collection("images")
+	images := []core.Image{}
+	projection := bson.D{
+		{Key: "title", Value: 1},
+		{Key: "uuid", Value: 1},
+		{Key: "tags", Value: 1},
+		{Key: "filepath", Value: 1},
+		{Key: "elo", Value: 1},
+		{Key: "_id", Value: 0},
+	}
+	//Find a random image
+	cursor, err := collection.Aggregate(ctx, bson.A{bson.M{"$sample": bson.M{"size": 1}}, bson.M{"$project": projection}})
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.Decode(&images[0]); err != nil {
+		return nil, err
+	}
+	filter := bson.D{{Key: "elo", Value: bson.D{{Key: "$gt", Value: images[0].Elo - 300}, {Key: "$lt", Value: images[0].Elo + 300}}}}
+	opts := options.Find().SetProjection(projection).SetLimit(1)
+	cursor, err = collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(ctx, &images[1]); err != nil {
+		return nil, err
+	}
+	if images[1].Uuid == images[0].Uuid {
+		a.FindMatch(ctx)
+	}
+	return images, nil
 }

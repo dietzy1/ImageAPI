@@ -17,6 +17,7 @@ import (
 
 	_ "golang.org/x/image/webp"
 
+	"github.com/buckket/go-blurhash"
 	"github.com/google/uuid"
 	"github.com/vitali-fedulov/images4"
 	"golang.org/x/crypto/bcrypt"
@@ -29,7 +30,11 @@ type Image struct {
 	Created_At string        `json:"created_at" bson:"created_at"`
 	Filepath   string        `json:"filepath" bson:"filepath"`
 	Filesize   int64         `json:"filesize" bson:"filesize"`
-	Hash       images4.IconT `json:"hash" bson:"hash"`
+	Width      int           `json:"width" bson:"width"`
+	Height     int           `json:"height" bson:"height"`
+	BlurHash   string        `json:"blurhash" bson:"blurhash"`
+	Hash       images4.IconT `json:"-" bson:"hash"`
+	Elo        float64       `json:"elo" bson:"elo"`
 }
 
 type Credentials struct {
@@ -42,24 +47,39 @@ type Credentials struct {
 
 // Simple validation againt the image struct that checks if name and tags are empty
 func (i Image) Validate(image Image) error {
-	if i.Title == "" {
-		fmt.Println("returning name")
+	if image.Title == "" {
 		return errors.New("empty name")
 	}
-	if len(i.Tags) == 0 {
-		fmt.Println("returning tags")
+	if len(image.Tags) == 0 {
 		return errors.New("empty tags")
+	}
+	if image.BlurHash == "" {
+		return errors.New("blurhash error")
 	}
 	return nil
 }
 
-// Decodes an image an returns the hash
-func (i Image) HashSet(buf bytes.Buffer) images4.IconT {
-	img, _, err := image.Decode(&buf)
-	if err != nil {
-		log.Println("Error decoding image")
-	}
+func (i Image) FindWidth(img image.Image) int {
+	return img.Bounds().Max.X
+}
+
+func (i Image) FindHeight(img image.Image) int {
+	return img.Bounds().Max.Y
+}
+
+// Returns a hashed icon hash of an image
+func (i Image) HashSet(img image.Image) images4.IconT {
 	return images4.Icon(img)
+}
+
+// returns the blurhash of an image
+func (i Image) BlurHashing(img image.Image) string {
+	blurhashed, err := blurhash.Encode(4, 3, img)
+	if err != nil {
+		log.Println("Error encoding image")
+		return ""
+	}
+	return blurhashed
 }
 
 func (i Image) FileSize(buf bytes.Buffer) int64 {

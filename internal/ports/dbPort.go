@@ -36,3 +36,8 @@ type SessionPort interface {
 	Delete(ctx context.Context, key string) error
 	Update(ctx context.Context, key string) error
 }
+
+type DbEloSystemPort interface {
+	GetLeaderBoardImages(ctx context.Context) ([]core.Image, error)
+	FindMatch(ctx context.Context) ([]core.Image, error)
+}

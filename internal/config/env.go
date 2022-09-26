@@ -13,5 +13,7 @@ func ReadEnvfile() {
 	if err != nil {
 		log.Println("Loading .env file failed, using production environment")
 	}
-	log.Println("Loaded .env file")
+	if err == nil {
+		log.Println("Loaded .env file")
+	}
 }
