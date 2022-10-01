@@ -38,7 +38,7 @@ func Router(s *ServerAdapter) {
 	r.HandleFunc("/healthcheck", s.healthcheck)
 
 	//Authentication subrouter routes
-	au := r.PathPrefix("/auth").Subrouter()
+	au := r.PathPrefix("/api/v0/auth").Subrouter()
 	au.Use(s.loggingMiddleware)
 	au.Use(s.corsMiddlewareCookie)
 	au.Use(s.ipRateLimitingMiddleware)
@@ -84,14 +84,14 @@ func Router(s *ServerAdapter) {
 	sb.HandleFunc("/image/random/", s.findImageRandom).Queries("key", "{key}").Methods(http.MethodGet)
 
 	//Elo system subrouter routes
-	elo := r.PathPrefix("/elo").Subrouter()
+	elo := r.PathPrefix("/api/v0/elo").Subrouter()
 	elo.Use(s.loggingMiddleware)
-	elo.Use(s.corsMiddlewareCookie)
+	elo.Use(s.corsMiddleware)
 	/* elo.Use(s.rateLimitingMiddleware) */
 
-	elo.HandleFunc("/requestmatch/", s.requestMatch).Queries("key", "{key}").Methods(http.MethodPost)
-	elo.HandleFunc("/matchresult/", s.matchResult).Queries("key", "{key}").Methods(http.MethodPost)
-	elo.HandleFunc("/leaderboard/", s.getLeaderboard).Queries("key", "{key}").Methods(http.MethodGet)
+	elo.HandleFunc("/requestmatch/", s.requestMatch).Methods(http.MethodGet)
+	elo.HandleFunc("/matchresult/", s.matchResult).Methods(http.MethodGet)
+	elo.HandleFunc("/leaderboard/", s.getLeaderboard).Methods(http.MethodGet)
 
 	srv := &http.Server{
 		Handler: r,

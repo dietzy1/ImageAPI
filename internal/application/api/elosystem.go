@@ -13,6 +13,7 @@ func (a Application) RequestMatch(ctx context.Context, w http.ResponseWriter, r 
 	images, err := a.dbElo.FindMatch(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to convert file to jpg. Here is the error value:", core.Errconv(err)})
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

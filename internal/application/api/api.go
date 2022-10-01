@@ -35,7 +35,7 @@ type Application struct {
 
 // Constructor
 func NewApplication(dbImage ports.DbImagePort, dbAccAuth ports.DbAccAuthPort, dbKeyAuth ports.DbKeyAuthPort, dbElo ports.DbEloSystemPort, session ports.SessionPort, cdn ports.CdnPort) *Application {
-	return &Application{dbImage: dbImage, dbAccAuth: dbAccAuth, dbKeyAuth: dbKeyAuth, cdn: cdn, session: session}
+	return &Application{dbImage: dbImage, dbAccAuth: dbAccAuth, dbKeyAuth: dbKeyAuth, dbElo: dbElo, cdn: cdn, session: session}
 }
 
 // Returns a single image based on query parameters from the database.
@@ -89,7 +89,6 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	err = core.ConvertToJPEG(buf, file)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-
 		_ = json.NewEncoder(w).Encode([]any{"Unable to convert file to jpg. Here is the error value:", core.Errconv(err)})
 		return
 	}
@@ -134,16 +133,17 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 				}
 			}(v)
 		}
-		recieve := <-c
-		if recieve {
+		wg.Wait()
+		select {
+		case <-c:
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode([]any{"Image already exists in the database. Here is the error value:", core.Errconv(err)})
 			return
+		default:
+			break
 		}
-		wg.Wait()
-		close(c)
 	}
-
+	wg.Wait() //wait statement incase I skip the hash check
 	err = image.Validate(image)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
