@@ -263,7 +263,7 @@ func (a *DbAdapter) FindMatch(ctx context.Context) ([]core.Image, error) {
 	},
 	}
 	temp := []core.Image{}
-	opts := options.Find().SetProjection(projection).SetLimit(1)
+	opts := options.Find().SetProjection(projection)
 	cursor, err = collection.Find(ctx, filter, opts)
 	if err != nil {
 		fmt.Println(err)
@@ -272,7 +272,8 @@ func (a *DbAdapter) FindMatch(ctx context.Context) ([]core.Image, error) {
 	if err = cursor.All(ctx, &temp); err != nil {
 		return nil, err
 	}
-	images = append(images, temp[0])
+
+	images = append(images, randomizeArray(temp, 1)[0])
 
 	if images[1].Uuid == images[0].Uuid {
 		a.FindMatch(ctx)

@@ -83,14 +83,12 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 	result, ok := a.dbKeyAuth.AuthenticateKey(ctx, key)
 	if !ok {
 		w.WriteHeader(http.StatusForbidden)
-		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
 		return false
 	}
 
 	err = a.session.Set(ctx, key, result)
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
-		_ = json.NewEncoder(w).Encode("Unable to authenticate key")
 		return false
 	}
 	return true
