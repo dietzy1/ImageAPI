@@ -50,7 +50,7 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 // allow credentials must be true to pass along the session credentials in the cookie.
 func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "pepe-api.vercel.app")
+		w.Header().Set("Access-Control-Allow-Origin", "pepe-api.vercel.app/")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
