@@ -69,7 +69,6 @@ func (a *DbAdapter) NewIndex(database string, collectionName string, field strin
 		return
 	}
 	fmt.Println("Created new index:", index)
-
 }
 
 // Performs either a random or specific uuid query against the database for an image object. Returns a single object.
@@ -171,7 +170,7 @@ func (a *DbAdapter) StoreImage(ctx context.Context, image *core.Image) error {
 // Updates an image object in the database
 func (a *DbAdapter) UpdateImage(ctx context.Context, image *core.Image) error {
 	collection := a.client.Database("Image-Database").Collection("Images")
-	_, err := collection.UpdateOne(ctx, bson.M{"uuid": image.Uuid}, bson.M{"$set": image})
+	_, err := collection.UpdateOne(ctx, bson.M{"uuid": image.Uuid}, bson.M{"$set": bson.D{{Key: "elo", Value: image.Elo}}})
 	if err != nil {
 		return err
 	}
@@ -276,7 +275,11 @@ func (a *DbAdapter) FindMatch(ctx context.Context) ([]core.Image, error) {
 	images = append(images, randomizeArray(temp, 1)[0])
 
 	if images[1].Uuid == images[0].Uuid {
-		a.FindMatch(ctx)
+		images, err = a.FindMatch(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 	return images, nil
 }

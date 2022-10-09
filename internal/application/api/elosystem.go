@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/dietzy1/imageAPI/internal/application/core"
 )
 
 // Should have middleware that checks that the user is sending the request from the website itself
+
 func (a Application) RequestMatch(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	images, err := a.dbElo.FindMatch(ctx)
 	if err != nil {
@@ -25,10 +27,26 @@ func (a Application) RequestMatch(ctx context.Context, w http.ResponseWriter, r 
 }
 
 func (a Application) MatchResult(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	image := []core.Image{}
-	err := json.NewDecoder(r.Body).Decode(&image)
-	if err != nil || len(image) != 2 {
+	image := []core.Image{{Uuid: "", Elo: 0}, {Uuid: "", Elo: 0}}
+	//Accept formdata
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	image[0].Uuid = r.FormValue("winneruuid")
+	image[1].Uuid = r.FormValue("looseruuid")
+
+	//convert to float
+	image[0].Elo, err = strconv.ParseFloat(r.FormValue("winnerelo"), 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	image[1].Elo, err = strconv.ParseFloat(r.FormValue("looserelo"), 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+
 		return
 	}
 	p := core.CalculateElo(image[0].Elo, image[1].Elo)
@@ -49,8 +67,6 @@ func (a Application) MatchResult(ctx context.Context, w http.ResponseWriter, r *
 }
 
 func (a Application) GetLeaderboard(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-
-	//Should implement redis caching here
 
 	images, err := a.dbElo.GetLeaderBoardImages(ctx)
 	if err != nil {

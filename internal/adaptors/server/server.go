@@ -90,7 +90,7 @@ func Router(s *ServerAdapter) {
 	/* elo.Use(s.rateLimitingMiddleware) */
 
 	elo.HandleFunc("/requestmatch/", s.requestMatch).Methods(http.MethodGet)
-	elo.HandleFunc("/matchresult/", s.matchResult).Methods(http.MethodGet)
+	elo.HandleFunc("/matchresult/", s.matchResult).Methods(http.MethodPost)
 	elo.HandleFunc("/leaderboard/", s.getLeaderboard).Methods(http.MethodGet)
 
 	srv := &http.Server{
