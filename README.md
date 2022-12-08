@@ -12,4 +12,6 @@ Infrastructure is built with mongodb as the main database for storing associated
 
 Server is implemented with the golang standart library with the addition of Gorillas Mux router. Custom built middleware such as Api key authentication and user ratelimiting is also present to ensure stability of service
 
+Inner domain logic contains extraction of regular image data but also image hashing in order to prevent multiple entries of the same image.
+
 # Documentation
