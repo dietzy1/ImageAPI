@@ -29,9 +29,9 @@ func (a Application) Signup(ctx context.Context, w http.ResponseWriter, r *http.
 	creds := core.Credentials{
 		Username:     r.Form.Get("username"),
 		Passwordhash: a.creds.Hash(r.Form.Get("password")),
+		Uuid:         uuid.New().String(),
 		Key:          core.GenerateAPIKey(),
 		Created_At:   a.image.SetTime(),
-		Role:         3,
 	}
 	err = creds.Validate(creds)
 	if err != nil {

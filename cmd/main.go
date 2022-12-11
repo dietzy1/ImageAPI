@@ -50,3 +50,12 @@ func main() {
 	fmt.Println("Server adapter initialized: ", serverAdapter)
 	server.Router(serverAdapter)
 }
+
+//TODO:
+
+//I want to reconfigure the database
+//Every user should be able to claim ownershio of a pepe
+//users should be able to upload their own pepe
+//User struct should contain a list of pepe ids
+//pepe should contain the owners id
+//pepe should contain the owners username

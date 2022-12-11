@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 
 	"github.com/buckket/go-blurhash"
@@ -35,14 +36,16 @@ type Image struct {
 	BlurHash   string        `json:"blurhash" bson:"blurhash"`
 	Hash       images4.IconT `json:"-" bson:"hash"`
 	Elo        float64       `json:"elo" bson:"elo"`
+	Owner      string        `json:"owner" bson:"owner"`
 }
 
 type Credentials struct {
-	Username     string `json:"username" bson:"username"`
-	Passwordhash string `json:"passwordhash" bson:"passwordhash"`
-	Key          string `json:"key" bson:"key"`
-	Created_At   string `json:"created_at" bson:"created_at"`
-	Role         int    `json:"role" bson:"role"`
+	Username     string   `json:"username" bson:"username"`
+	Passwordhash string   `json:"passwordhash" bson:"passwordhash"`
+	Uuid         string   `json:"uuid" bson:"uuid"`
+	Key          string   `json:"key" bson:"key"`
+	Created_At   string   `json:"created_at" bson:"created_at"`
+	OwnedImages  []string `json:"owned_images" bson:"owned_images"`
 }
 
 // Simple validation againt the image struct that checks if name and tags are empty
@@ -70,6 +73,21 @@ func (i Image) FindHeight(img image.Image) int {
 // Returns a hashed icon hash of an image
 func (i Image) HashSet(img image.Image) images4.IconT {
 	return images4.Icon(img)
+}
+
+// function that scales down an image.image to 32x32px
+func (i Image) ScaleDown(img image.Image) image.Image {
+	// Set the desired width and height
+	width := 32
+	height := 32
+
+	// Create a new image of the desired width and height
+	newImage := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	// Scale the original image to fit the new image
+	draw.CatmullRom.Scale(newImage, newImage.Bounds(), img, img.Bounds(), draw.Over, nil)
+
+	return newImage
 }
 
 // returns the blurhash of an image

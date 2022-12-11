@@ -102,6 +102,7 @@ func Router(s *ServerAdapter) {
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
+	log.Fatal(srv.ListenAndServe())
 
 	//rl := rateLimiting{}
 	//Instantiate garbage collection of the cooldowns map

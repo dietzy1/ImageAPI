@@ -11,9 +11,9 @@ import (
 type ApiPort interface {
 	FindImage(ctx context.Context, w http.ResponseWriter, r *http.Request, query string, querytype string)
 	FindImages(ctx context.Context, w http.ResponseWriter, r *http.Request, query []string, querytype string, quantity int)
-	AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
-	DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
-	UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string)
+	DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string)
+	UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string)
 }
 
 type AccAuthPort interface {
@@ -29,6 +29,7 @@ type KeyAuthPort interface {
 	DeleteKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateKey(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
 	ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request)
+	FindOwner(ctx context.Context, w http.ResponseWriter, r *http.Request) (string, error)
 }
 
 type EloSystemPort interface {

@@ -75,8 +75,14 @@ func (s *ServerAdapter) findImagesRandom(w http.ResponseWriter, r *http.Request)
 func (s *ServerAdapter) addImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.api.AddImage(ctx, w, r)
 
+	//Returns uuid of the authenticated user.
+	uuid, err := s.keyauth.FindOwner(ctx, w, r)
+	if err != nil {
+		return
+	}
+	// call the add image method
+	s.api.AddImage(ctx, w, r, uuid)
 }
 
 // Entry point for following PUT route:
@@ -84,7 +90,13 @@ func (s *ServerAdapter) addImage(w http.ResponseWriter, r *http.Request) {
 func (s *ServerAdapter) updateImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.api.UpdateImage(ctx, w, r)
+	// Returns uuid of the authenticated user.
+	uuid, err := s.keyauth.FindOwner(ctx, w, r)
+	if err != nil {
+		return
+	}
+
+	s.api.UpdateImage(ctx, w, r, uuid)
 }
 
 // Entry point for following DELETE route:
@@ -92,7 +104,13 @@ func (s *ServerAdapter) updateImage(w http.ResponseWriter, r *http.Request) {
 func (s *ServerAdapter) deleteImage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	s.api.DeleteImage(ctx, w, r)
+	// Returns uuid of the authenticated user.
+	uuid, err := s.keyauth.FindOwner(ctx, w, r)
+	if err != nil {
+		return
+	}
+
+	s.api.DeleteImage(ctx, w, r, uuid)
 }
 
 // Entry point for following healthcheck route:

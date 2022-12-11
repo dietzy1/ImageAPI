@@ -94,6 +94,28 @@ func (a Application) AuthenticateKey(ctx context.Context, w http.ResponseWriter,
 	return true
 }
 
+// returns the user uuid of the API key. Used for image uploading and updating/deletion.
+func (a Application) FindOwner(ctx context.Context, w http.ResponseWriter, r *http.Request) (string, error) {
+	vars := mux.Vars(r)
+	key := vars["key"]
+	if vars["key"] == "" {
+		err := r.ParseMultipartForm(32 << 20)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode("Unable to parse the html form")
+			return "", err
+		}
+		key = r.Form.Get("key")
+	}
+
+	_, err := a.session.Get(ctx, key)
+	if err == nil {
+		return "", err
+	}
+
+	return a.dbKeyAuth.GetUserUUID(ctx, key)
+}
+
 // Returns the API key for the user.
 func (a Application) ShowKey(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")

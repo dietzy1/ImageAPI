@@ -57,3 +57,14 @@ func (a *DbAdapter) GetKey(ctx context.Context, username string) (string, error)
 	}
 	return cred.Key, nil
 }
+
+// function that uses the key in order to retrive the uuid of the user.
+func (a *DbAdapter) GetUserUUID(ctx context.Context, key string) (string, error) {
+	collection := a.client.Database("Credential-Database").Collection("Credentials")
+	cred := core.Credentials{}
+	err := collection.FindOne(ctx, bson.M{"key": key}).Decode(&cred)
+	if err != nil {
+		return "", err
+	}
+	return cred.Uuid, nil
+}

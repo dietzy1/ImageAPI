@@ -22,6 +22,7 @@ type DbKeyAuthPort interface {
 	DeleteKey(ctx context.Context, username string) error
 	AuthenticateKey(ctx context.Context, key string) (string, bool)
 	GetKey(ctx context.Context, userrname string) (string, error)
+	GetUserUUID(ctx context.Context, key string) (string, error)
 }
 
 type DbAccAuthPort interface {

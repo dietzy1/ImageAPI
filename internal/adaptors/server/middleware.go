@@ -39,6 +39,7 @@ func (s *ServerAdapter) corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+
 		if r.Method == "OPTIONS" {
 			return
 		}
@@ -61,8 +62,6 @@ func (s *ServerAdapter) corsMiddlewareCookie(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-//var cooldown = make(map[string]*rate.Limiter)
 
 var cooldown = make(map[string]*rateLimiting)
 

@@ -69,7 +69,7 @@ func (a Application) FindImages(ctx context.Context, w http.ResponseWriter, r *h
 }
 
 // Adds a single image CDN and the image meta data to database. Simple verification and image convertion is done aswell.
-func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -108,12 +108,17 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 		Width:      a.image.FindWidth(img),
 		Height:     a.image.FindHeight(img),
 		Elo:        1500,
+		Owner:      ownerUuid,
 	}
+
+	//I need to define some logic to determine the owner of the image.
+
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		image.ScaleDown(img)
 		image.BlurHash = image.BlurHashing(img)
 	}()
 
@@ -172,10 +177,25 @@ func (a Application) AddImage(ctx context.Context, w http.ResponseWriter, r *htt
 	}
 }
 
+//I need to perform changes so only the uuid of located in the owner struct can perform changes to the image.
+
 // Deletes an image from the CDN and database.
-func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string) {
 	vars := mux.Vars(r)
-	err := a.cdn.DeleteFile(ctx, vars["uuid"])
+	//Perform lookup to see if the owner of the image is the same as the owner of the request.
+	image, err := a.dbImage.FindImage(ctx, vars["uuid"], ownerUuid)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image in the mongodb. Here is the error value:", core.Errconv(err)})
+		return
+	}
+	if image.Owner != ownerUuid {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image. You are not the owner of the image."})
+		return
+	}
+
+	err = a.cdn.DeleteFile(ctx, vars["uuid"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image in the cdn. Here is the error value:", core.Errconv(err)})
@@ -193,7 +213,7 @@ func (a Application) DeleteImage(ctx context.Context, w http.ResponseWriter, r *
 }
 
 // Updates image metadata in the CDN and database. Simple verification is done aswell.
-func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *http.Request, ownerUuid string) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -211,6 +231,17 @@ func (a Application) UpdateImage(ctx context.Context, w http.ResponseWriter, r *
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode([]any{"Unable to validate. Here is the error value:", core.Errconv(err)})
+		return
+	}
+	imageData, err := a.dbImage.FindImage(ctx, image.Uuid, ownerUuid)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to find the image in the mongodb. Here is the error value:", core.Errconv(err)})
+		return
+	}
+	if imageData.Owner != ownerUuid {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode([]any{"Unable to delete the image. You are not the owner of the image."})
 		return
 	}
 
