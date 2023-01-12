@@ -187,6 +187,9 @@ func (a *DbAdapter) DeleteImage(ctx context.Context, uuid string) error {
 	return nil
 }
 
+
+
+
 // randomizes the images based on the quantity
 func randomizeArray(images []core.Image, quantity int) []core.Image {
 	if len(images) == 0 {

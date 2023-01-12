@@ -135,13 +135,6 @@ func (s *ServerAdapter) generateAPIKey(w http.ResponseWriter, r *http.Request) {
 	s.keyauth.UpdateKey(ctx, w, r)
 }
 
-// Idk what this is doing here
-func (s *ServerAdapter) generateAdminAPIKey(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	s.keyauth.UpdateKey(ctx, w, r)
-}
-
 // Entry point for following POST route:
 // /auth/deletekey/
 func (s *ServerAdapter) deleteAPIKey(w http.ResponseWriter, r *http.Request) {

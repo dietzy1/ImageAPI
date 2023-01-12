@@ -15,7 +15,6 @@ import (
 
 // Constructor
 func NewRedisAdapter() (*DbAdapter, error) {
-
 	otp, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
 		panic(err)
